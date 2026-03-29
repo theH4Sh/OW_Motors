@@ -48,6 +48,7 @@ export default function Login() {
                     username: data.username,
                     token: data.token,
                     role: data.role,
+                    branch: data.branch,
                     isAuthenticated: true
                 }))
                 navigate('/')

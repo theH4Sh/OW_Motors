@@ -45,6 +45,12 @@ const Sidebar = () => {
                     <Link to="/manager/inventory" className={`nav-item ${isActive('/manager/inventory')}`}>
                         Inventory
                     </Link>
+                    <Link to="/manager/pos" className={`nav-item ${isActive('/manager/pos')}`}>
+                        Point of Sale (POS)
+                    </Link>
+                    <Link to="/manager/orders" className={`nav-item ${isActive('/manager/orders')}`}>
+                        Order History
+                    </Link>
                 </>
             )}
             

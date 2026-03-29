@@ -34,6 +34,11 @@ const createOrder = async (req, res, next) => {
                 return res.status(404).json({ message: `Product not found` })
             }
 
+            // SECURITY CHECK: Intercept cross-branch inventory deduction
+            if (req.user.role === 'manager' && product.branch !== req.user.branch) {
+                return res.status(403).json({ message: `Forbidden: You cannot sell inventory assigned to a different branch.` })
+            }
+
             // ✅ Check stock
             if (product.quantity < item.quantity) {
                 return res.status(400).json({
@@ -108,6 +113,12 @@ const getAllOrders = async (req, res, next) => {
 const getAllOrdersByBranch = async (req, res, next) => {
     try {
         const { branch } = req.params
+        
+        // SECURITY CHECK: Intercept cross-branch data leaks
+        if (req.user.role === 'manager' && req.user.branch !== branch) {
+            return res.status(403).json({ message: 'Forbidden: You can only view orders for your assigned branch.' })
+        }
+
         const orders = await Order.find({ branch }).populate('items.product').sort({ createdAt: -1 })
 
         if (orders.length === 0) {
