@@ -12,6 +12,7 @@ const PointOfSale = () => {
     const [cart, setCart] = useState([]);
     const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
     const [processing, setProcessing] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     
     // Created fully formed order to pass to Invoice
     const [completedOrder, setCompletedOrder] = useState(null);
@@ -86,18 +87,40 @@ const PointOfSale = () => {
 
     const cartTotal = cart.reduce((sum, item) => sum + (item.sellingPrice * item.qty), 0);
 
+    const filteredProducts = products.filter(p => {
+        const q = searchQuery.toLowerCase();
+        return p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q));
+    });
+
     return (
         <div className="h-full flex gap-6 mt-4">
             
             {/* Inventory Grid (Left Side) */}
             <div className="flex-1 overflow-y-auto pr-2 pb-10">
-                <h1 className="text-2xl font-bold mb-6 text-gray-800">Point of Sale</h1>
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-2xl font-bold text-gray-800">Point of Sale</h1>
+                    <div className="relative w-72">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm text-sm focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
+                        />
+                    </div>
+                </div>
                 
                 {status === 'loading' ? (
                     <p>Loading inventory...</p>
+                ) : filteredProducts.length === 0 ? (
+                    <div className="text-center py-16 text-gray-400">
+                        <svg className="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <p className="font-medium">No products match "{searchQuery}"</p>
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {products.map(prod => (
+                        {filteredProducts.map(prod => (
                             <div 
                                 key={prod._id} 
                                 onClick={() => addToCart(prod)}
