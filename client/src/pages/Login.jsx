@@ -25,7 +25,8 @@ export default function Login() {
     const handleSubmit = (e) => {
         e.preventDefault()
 
-        fetch(import.meta.env.VITE_API + 'auth/login/', {
+        const API_URL = import.meta.env.VITE_API || 'http://localhost:8000/api/';
+        fetch(API_URL + 'auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
@@ -34,7 +35,7 @@ export default function Login() {
                 if (!res.ok) {
                     return res.json().then((data) => {
                         console.log(data)
-                        throw new Error(data.detail)
+                        throw new Error(data.message || data.error || data.detail || 'Login Failed')
                     })
                 }
                 return res.json()

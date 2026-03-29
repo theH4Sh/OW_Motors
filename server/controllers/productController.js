@@ -26,6 +26,11 @@ const searchProducts = async (req, res, next) => {
 
         // Filters
         if (category) matchStage.category = category;
+        if (req.user.role === 'manager') {
+            matchStage.branch = req.user.branch;
+        } else if (req.query.branch) {
+            matchStage.branch = req.query.branch;
+        }
 
         if (minPrice || maxPrice) {
             matchStage.sellingPrice = {};
@@ -102,6 +107,11 @@ const getAllProducts = async (req, res, next) => {
         // Build match stage dynamically
         const matchStage = {};
         if (category) matchStage.category = category;
+        if (req.user.role === 'manager') {
+            matchStage.branch = req.user.branch;
+        } else if (req.query.branch) {
+            matchStage.branch = req.query.branch;
+        }
 
         const products = await Product.aggregate([
             { $match: matchStage }, // <-- filter by category here
@@ -168,6 +178,12 @@ const getProduct = async (req, res, next) => {
             return next(error)
         }
 
+        if (req.user.role === 'manager' && product.branch !== req.user.branch) {
+            const error = new Error("Unauthorized access to this product")
+            error.status = 403
+            return next(error)
+        }
+
         res.status(200).json(product)
     } catch (error) {
         next(error)
@@ -184,13 +200,21 @@ const deleteProduct = async (req, res, next) => {
             return next(error)
         }
 
-        const deleteProduct = await Product.findByIdAndDelete(id)
+        const productToDelete = await Product.findById(id)
 
-        if (!deleteProduct) {
+        if (!productToDelete) {
             const error = new Error("Product Not Found")
             error.status = 404
             return next(error)
         }
+
+        if (req.user.role === 'manager' && productToDelete.branch !== req.user.branch) {
+            const error = new Error("Unauthorized to delete this product")
+            error.status = 403
+            return next(error)
+        }
+
+        const deleteProduct = await Product.findByIdAndDelete(id)
 
         res.status(200).json({ message: 'Product Deleted Successfully', deleteProduct })
     } catch (error) {
@@ -206,6 +230,8 @@ const addProduct = async (req, res, next) => {
             return res.status(400).json({ error: 'Product Image Required' })
         }
 
+        const assignBranch = req.user.role === 'manager' ? req.user.branch : branch;
+
         const newProduct = new Product({
             name,
             purchasePrice,
@@ -214,7 +240,7 @@ const addProduct = async (req, res, next) => {
             quantity,
             image: req.file.filename,
             category,
-            branch
+            branch: assignBranch
         })
 
         await newProduct.save()
@@ -232,6 +258,10 @@ const updateProduct = async (req, res, next) => {
             return res.status(404).json({ message: "Product not found" });
         }
 
+        if (req.user.role === 'manager' && product.branch !== req.user.branch) {
+            return res.status(403).json({ message: "Unauthorized to update this product" })
+        }
+
         // Update fields if provided
         product.name = req.body.name || product.name;
         product.description = req.body.description || product.description;
@@ -239,7 +269,7 @@ const updateProduct = async (req, res, next) => {
         product.sellingPrice = req.body.sellingPrice || product.sellingPrice;
         product.quantity = req.body.quantity || product.quantity;
         product.category = req.body.category || product.category;
-        product.branch = req.body.branch || product.branch;
+        product.branch = req.user.role === 'manager' ? req.user.branch : (req.body.branch || product.branch);
 
         // If new image uploaded
         if (req.file) {

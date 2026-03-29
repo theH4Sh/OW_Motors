@@ -20,6 +20,7 @@ const loginUser = async (req, res, next) => {
 
         const role = user.role
         const username = user.username
+        const branch = user.branch
 
         //token
         const token = createToken(user)
@@ -57,6 +58,15 @@ const signUpUser = async (req, res, next) => {
         res.status(201).json({ message: `${username} registered successfully. Please check your email and verify`, token })
     } catch (error) {
         next(error)
+    }
+}
+
+const getAllManagers = async (req, res, next) => {
+    try {
+        const managers = await User.find({ role: 'manager' }).select('-password -__v');
+        res.status(200).json(managers);
+    } catch (error) {
+        next(error);
     }
 }
 
@@ -144,4 +154,4 @@ const resetPassword = async (req, res, next) => {
         next(error)
     }
 }
-module.exports = { loginUser, signUpUser, getUser, verifyEmail, forgotPassword, resetPassword }
+module.exports = { loginUser, signUpUser, getUser, verifyEmail, forgotPassword, resetPassword, getAllManagers }

@@ -21,9 +21,9 @@ mongoose.connect(process.env.MONGO_URI)
     .catch((err) => console.log(err))
 
 //API Routes
-app.use("/api", require("./routes/productRoutes"))
-app.use("/api/orders", require("./routes/orderRoutes"))
 app.use("/api/auth", require("./routes/userRoutes"))
+app.use("/api/orders", require("./routes/orderRoutes"))
+app.use("/api", require("./routes/productRoutes"))
 
 //Error Handling
 app.use((err, req, res, next) => {
