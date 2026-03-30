@@ -51,7 +51,8 @@ const createOrder = async (req, res, next) => {
             orderItems.push({
                 product: product._id,
                 quantity: item.quantity,
-                price: product.sellingPrice
+                price: product.sellingPrice,
+                purchasePrice: product.purchasePrice
             })
 
             if (!branch) branch = product.branch;

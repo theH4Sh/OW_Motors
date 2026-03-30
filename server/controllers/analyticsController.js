@@ -44,6 +44,8 @@ const getBranchAnalytics = async (req, res, next) => {
         const orders = await Order.find(orderFilter).populate('items.product')
         const totalOrders = orders.length
         const totalRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0)
+        const totalCOGS = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + ((i.purchasePrice || i.product?.purchasePrice || 0) * i.quantity), 0), 0)
+        const totalProfit = totalRevenue - totalCOGS
         const totalItemsSold = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0)
         const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
@@ -80,6 +82,8 @@ const getBranchAnalytics = async (req, res, next) => {
             sales: {
                 totalOrders,
                 totalRevenue,
+                totalCOGS,
+                totalProfit,
                 totalItemsSold,
                 avgOrderValue,
                 topProducts

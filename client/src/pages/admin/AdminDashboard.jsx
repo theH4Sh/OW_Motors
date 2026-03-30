@@ -44,6 +44,8 @@ const AdminDashboard = () => {
     const lowStockProducts = products.filter(p => p.quantity <= 5);
     const totalOrders = orders.length;
     const totalRevenue = orders.reduce((s, o) => s + o.totalAmount, 0);
+    const totalCOGS = orders.reduce((s, o) => s + o.items.reduce((sum, item) => sum + ((item.purchasePrice || item.product?.purchasePrice || 0) * item.quantity), 0), 0);
+    const totalProfit = totalRevenue - totalCOGS;
 
     // Branch breakdown
     const branchMap = {};
@@ -54,9 +56,12 @@ const AdminDashboard = () => {
         branchMap[p.branch].value += p.sellingPrice * p.quantity;
     });
     orders.forEach(o => {
-        if (!branchMap[o.branch]) branchMap[o.branch] = { products: 0, units: 0, value: 0, orders: 0, revenue: 0 };
+        if (!branchMap[o.branch]) branchMap[o.branch] = { products: 0, units: 0, value: 0, orders: 0, revenue: 0, cogs: 0, profit: 0 };
         branchMap[o.branch].orders++;
         branchMap[o.branch].revenue += o.totalAmount;
+        const orderCOGS = o.items.reduce((sum, item) => sum + ((item.purchasePrice || item.product?.purchasePrice || 0) * item.quantity), 0);
+        branchMap[o.branch].cogs += orderCOGS;
+        branchMap[o.branch].profit += (o.totalAmount - orderCOGS);
     });
 
     // Recent orders (last 5)
@@ -98,7 +103,25 @@ const AdminDashboard = () => {
                             </div>
                             <div>
                                 <p className="kpi-label">Total Revenue</p>
-                                <p className="kpi-value text-emerald-600">PKR {totalRevenue}</p>
+                                <p className="kpi-value text-emerald-600">PKR {totalRevenue.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-icon bg-rose-50 text-rose-600">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                            </div>
+                            <div>
+                                <p className="kpi-label">Total Expenses</p>
+                                <p className="kpi-value text-rose-600">PKR {totalCOGS.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        <div className="kpi-card">
+                            <div className="kpi-icon bg-emerald-100 text-[#0B7C56]">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                            </div>
+                            <div>
+                                <p className="kpi-label">Total Profit</p>
+                                <p className="kpi-value text-[#0B7C56]">PKR {totalProfit.toLocaleString()}</p>
                             </div>
                         </div>
                         <div className="kpi-card">
@@ -138,12 +161,12 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                         <div className="kpi-card">
-                            <div className="kpi-icon bg-rose-50 text-rose-600">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                            <div className="kpi-icon bg-slate-100 text-slate-600">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                             </div>
                             <div>
                                 <p className="kpi-label">Stock Value</p>
-                                <p className="kpi-value">PKR {totalStockValue}</p>
+                                <p className="kpi-value">PKR {totalStockValue.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
@@ -167,6 +190,7 @@ const AdminDashboard = () => {
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-right">Stock Value</th>
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-center">Orders</th>
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-right">Revenue</th>
+                                        <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-right text-emerald-600">Profit</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -185,7 +209,8 @@ const AdminDashboard = () => {
                                                 <td className="py-3.5 px-5 text-center text-gray-600">{data.units}</td>
                                                 <td className="py-3.5 px-5 text-right font-medium text-gray-800">{fmt(data.value)}</td>
                                                 <td className="py-3.5 px-5 text-center text-gray-600">{data.orders}</td>
-                                                <td className="py-3.5 px-5 text-right font-bold text-[#0B7C56]">{fmt(data.revenue)}</td>
+                                                <td className="py-3.5 px-5 text-right font-bold text-slate-800">{fmt(data.revenue)}</td>
+                                                <td className="py-3.5 px-5 text-right font-bold text-[#0B7C56]">{fmt(data.profit)}</td>
                                             </tr>
                                         ))
                                     )}

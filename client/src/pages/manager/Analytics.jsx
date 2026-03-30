@@ -94,7 +94,7 @@ const Analytics = () => {
         { key: 'all', label: 'All Time' },
     ];
 
-    const fmt = (n) => '$' + (n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = (n) => 'PKR ' + (n || 0).toLocaleString();
 
     return (
         <div className="mt-4 pb-10">
@@ -152,22 +152,30 @@ const Analytics = () => {
                 <>
                     {/* ─── Sales KPI Row ─── */}
                     <h2 className="text-lg font-bold text-gray-700 mb-3">Sales Performance</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                             <p className="text-sm text-gray-500 font-medium mb-1">Total Revenue</p>
-                            <p className="text-3xl font-bold text-[#0B7C56]">{fmt(data.sales.totalRevenue)}</p>
+                            <p className="text-2xl font-bold text-[#0B7C56]">{fmt(data.sales.totalRevenue)}</p>
+                        </div>
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                            <p className="text-sm text-gray-500 font-medium mb-1">Total Expense (COGS)</p>
+                            <p className="text-2xl font-bold text-rose-500">{fmt(data.sales.totalCOGS)}</p>
+                        </div>
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                            <p className="text-sm text-gray-500 font-medium mb-1">Total Profit</p>
+                            <p className="text-2xl font-bold text-emerald-600">{fmt(data.sales.totalProfit)}</p>
                         </div>
                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                             <p className="text-sm text-gray-500 font-medium mb-1">Orders Processed</p>
-                            <p className="text-3xl font-bold text-gray-800">{data.sales.totalOrders}</p>
+                            <p className="text-2xl font-bold text-gray-800">{data.sales.totalOrders}</p>
                         </div>
                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                             <p className="text-sm text-gray-500 font-medium mb-1">Items Sold</p>
-                            <p className="text-3xl font-bold text-gray-800">{data.sales.totalItemsSold}</p>
+                            <p className="text-2xl font-bold text-gray-800">{data.sales.totalItemsSold}</p>
                         </div>
                         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                             <p className="text-sm text-gray-500 font-medium mb-1">Avg Order Value</p>
-                            <p className="text-3xl font-bold text-gray-800">{fmt(data.sales.avgOrderValue)}</p>
+                            <p className="text-2xl font-bold text-gray-800">{fmt(data.sales.avgOrderValue)}</p>
                         </div>
                     </div>
 
