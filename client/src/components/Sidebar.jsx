@@ -26,7 +26,7 @@ const navIcons = {
     ),
 };
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
     const { role, username, branch } = useSelector(state => state.auth);
     const location = useLocation();
     const dispatch = useDispatch();
@@ -34,79 +34,77 @@ const Sidebar = () => {
     const handleLogout = () => {
         localStorage.removeItem('auth');
         dispatch(logout());
+        if (onClose) onClose();
     };
 
     const isActive = (path) => location.pathname === path ? 'active' : '';
 
+    const NavLink = ({ to, children }) => (
+        <Link 
+            to={to} 
+            className={`nav-item ${isActive(to)}`}
+            onClick={() => onClose && onClose()}
+        >
+            {children}
+        </Link>
+    );
+
     return (
-        <div className="sidebar">
-            {/* Logo */}
-            <div className="sidebar-logo">
-                <div className="logo-mark">OW</div>
-                <div>
-                    <span className="logo-text">Motors</span>
-                    <span className="logo-sub">Inventory System</span>
-                </div>
-            </div>
-
-            {/* User Info Pill */}
-            <div className="sidebar-user">
-                <div className="user-avatar">{username?.[0]?.toUpperCase() || 'U'}</div>
-                <div className="user-info">
-                    <span className="user-name">{username}</span>
-                    <span className="user-role">{role} {branch ? `• ${branch}` : ''}</span>
-                </div>
-            </div>
-
-            <div className="sidebar-section-label">Navigation</div>
-
-            {role === 'admin' && (
-                <>
-                    <Link to="/admin" className={`nav-item ${isActive('/admin')}`}>
-                        {navIcons.dashboard} Dashboard
-                    </Link>
-                    <Link to="/admin/managers" className={`nav-item ${isActive('/admin/managers')}`}>
-                        {navIcons.managers} Branch Managers
-                    </Link>
-                    <Link to="/admin/inventory" className={`nav-item ${isActive('/admin/inventory')}`}>
-                        {navIcons.inventory} Global Inventory
-                    </Link>
-                    <Link to="/admin/orders" className={`nav-item ${isActive('/admin/orders')}`}>
-                        {navIcons.orders} All Orders
-                    </Link>
-                    <Link to="/admin/analytics" className={`nav-item ${isActive('/admin/analytics')}`}>
-                        {navIcons.analytics} Analytics
-                    </Link>
-                </>
-            )}
-
-            {role === 'manager' && (
-                <>
-                    <Link to="/manager" className={`nav-item ${isActive('/manager')}`}>
-                        {navIcons.dashboard} Dashboard
-                    </Link>
-                    <Link to="/manager/inventory" className={`nav-item ${isActive('/manager/inventory')}`}>
-                        {navIcons.inventory} Inventory
-                    </Link>
-                    <Link to="/manager/pos" className={`nav-item ${isActive('/manager/pos')}`}>
-                        {navIcons.pos} Point of Sale
-                    </Link>
-                    <Link to="/manager/orders" className={`nav-item ${isActive('/manager/orders')}`}>
-                        {navIcons.orders} Order History
-                    </Link>
-                    <Link to="/manager/analytics" className={`nav-item ${isActive('/manager/analytics')}`}>
-                        {navIcons.analytics} Analytics
-                    </Link>
-                </>
-            )}
-            
-            <div style={{ marginTop: 'auto' }}>
-                <div className="sidebar-section-label">Account</div>
-                <button onClick={handleLogout} className="nav-item logout-btn">
-                    {navIcons.logout} Logout
+        <>
+            <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+                {/* Close Button for Mobile */}
+                <button className="sidebar-close-btn" onClick={onClose}>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
+
+                {/* Logo */}
+                <div className="sidebar-logo">
+                    <div className="logo-mark">OW</div>
+                    <div>
+                        <span className="logo-text">Motors</span>
+                        <span className="logo-sub">Inventory System</span>
+                    </div>
+                </div>
+
+                {/* User Info Pill */}
+                <div className="sidebar-user">
+                    <div className="user-avatar">{username?.[0]?.toUpperCase() || 'U'}</div>
+                    <div className="user-info">
+                        <span className="user-name">{username}</span>
+                        <span className="user-role">{role} {branch ? `• ${branch}` : ''}</span>
+                    </div>
+                </div>
+
+                <div className="sidebar-section-label">Navigation</div>
+
+                {role === 'admin' && (
+                    <>
+                        <NavLink to="/admin">{navIcons.dashboard} Dashboard</NavLink>
+                        <NavLink to="/admin/managers">{navIcons.managers} Branch Managers</NavLink>
+                        <NavLink to="/admin/inventory">{navIcons.inventory} Global Inventory</NavLink>
+                        <NavLink to="/admin/orders">{navIcons.orders} All Orders</NavLink>
+                        <NavLink to="/admin/analytics">{navIcons.analytics} Analytics</NavLink>
+                    </>
+                )}
+
+                {role === 'manager' && (
+                    <>
+                        <NavLink to="/manager">{navIcons.dashboard} Dashboard</NavLink>
+                        <NavLink to="/manager/inventory">{navIcons.inventory} Inventory</NavLink>
+                        <NavLink to="/manager/pos">{navIcons.pos} Point of Sale</NavLink>
+                        <NavLink to="/manager/orders">{navIcons.orders} Order History</NavLink>
+                        <NavLink to="/manager/analytics">{navIcons.analytics} Analytics</NavLink>
+                    </>
+                )}
+                
+                <div style={{ marginTop: 'auto' }}>
+                    <div className="sidebar-section-label">Account</div>
+                    <button onClick={handleLogout} className="nav-item logout-btn">
+                        {navIcons.logout} Logout
+                    </button>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
