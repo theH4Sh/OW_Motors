@@ -215,7 +215,8 @@ const Analytics = () => {
                                             <th className="py-3 px-6 font-semibold text-gray-600">Category</th>
                                             <th className="py-3 px-6 font-semibold text-gray-600 text-center">Product Types</th>
                                             <th className="py-3 px-6 font-semibold text-gray-600 text-center">Total Qty</th>
-                                            <th className="py-3 px-6 font-semibold text-gray-600 text-right">Value</th>
+                                            <th className="py-3 px-6 font-semibold text-gray-600 text-right">Revenue</th>
+                                            <th className="py-3 px-6 font-semibold text-gray-600 text-right text-emerald-600">Profit</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -225,6 +226,7 @@ const Analytics = () => {
                                                 <td className="py-3 px-6 text-center text-gray-600">{info.count}</td>
                                                 <td className="py-3 px-6 text-center text-gray-600">{info.qty}</td>
                                                 <td className="py-3 px-6 text-right font-semibold text-gray-800">{fmt(info.value)}</td>
+                                                <td className="py-3 px-6 text-right font-bold text-[#0B7C56]">{fmt(info.profit || 0)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -246,6 +248,7 @@ const Analytics = () => {
                                             <th className="py-3 px-6 font-semibold text-gray-600">Category</th>
                                             <th className="py-3 px-6 font-semibold text-gray-600 text-center">Qty Sold</th>
                                             <th className="py-3 px-6 font-semibold text-gray-600 text-right">Revenue</th>
+                                            <th className="py-3 px-6 font-semibold text-gray-600 text-right text-emerald-600">Profit</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -255,7 +258,8 @@ const Analytics = () => {
                                                 <td className="py-3 px-6 font-semibold text-gray-800">{prod.name}</td>
                                                 <td className="py-3 px-6 text-gray-600 capitalize">{prod.category?.replace('_', ' ')}</td>
                                                 <td className="py-3 px-6 text-center font-medium text-gray-700">{prod.qtySold}</td>
-                                                <td className="py-3 px-6 text-right font-bold text-[#0B7C56]">{fmt(prod.revenue)}</td>
+                                                <td className="py-3 px-6 text-right font-bold text-slate-800">{fmt(prod.revenue)}</td>
+                                                <td className="py-3 px-6 text-right font-bold text-[#0B7C56]">{fmt(prod.profit || 0)}</td>
                                             </tr>
                                         ))}
                                     </tbody>

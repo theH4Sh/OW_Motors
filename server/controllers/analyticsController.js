@@ -22,7 +22,7 @@ const getBranchAnalytics = async (req, res, next) => {
         const categoryBreakdown = {}
         products.forEach(p => {
             if (!categoryBreakdown[p.category]) {
-                categoryBreakdown[p.category] = { count: 0, qty: 0, value: 0 }
+                categoryBreakdown[p.category] = { count: 0, qty: 0, value: 0, profit: 0 }
             }
             categoryBreakdown[p.category].count++
             categoryBreakdown[p.category].qty += p.quantity
@@ -49,7 +49,6 @@ const getBranchAnalytics = async (req, res, next) => {
         const totalItemsSold = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0)
         const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
-        // Top selling products
         const productSales = {}
         orders.forEach(order => {
             order.items.forEach(item => {
@@ -59,11 +58,21 @@ const getBranchAnalytics = async (req, res, next) => {
                         name: item.product?.name || 'Unknown',
                         category: item.product?.category || '',
                         qtySold: 0,
-                        revenue: 0
+                        revenue: 0,
+                        profit: 0
                     }
                 }
+                const purchaseP = item.purchasePrice || item.product?.purchasePrice || 0;
                 productSales[id].qtySold += item.quantity
                 productSales[id].revenue += item.price * item.quantity
+                productSales[id].profit += (item.price - purchaseP) * item.quantity;
+                
+                // Also add to category profit
+                const cat = item.product?.category || 'other'
+                if (categoryBreakdown[cat]) {
+                    if (!categoryBreakdown[cat].profit) categoryBreakdown[cat].profit = 0;
+                    categoryBreakdown[cat].profit += (item.price - purchaseP) * item.quantity;
+                }
             })
         })
         const topProducts = Object.values(productSales)

@@ -50,7 +50,7 @@ const AdminDashboard = () => {
     // Branch breakdown
     const branchMap = {};
     products.forEach(p => {
-        if (!branchMap[p.branch]) branchMap[p.branch] = { products: 0, units: 0, value: 0, orders: 0, revenue: 0 };
+        if (!branchMap[p.branch]) branchMap[p.branch] = { products: 0, units: 0, value: 0, orders: 0, revenue: 0, cogs: 0, profit: 0 };
         branchMap[p.branch].products++;
         branchMap[p.branch].units += p.quantity;
         branchMap[p.branch].value += p.sellingPrice * p.quantity;
