@@ -23,6 +23,7 @@ mongoose.connect(process.env.MONGO_URI)
 //API Routes
 app.use("/api/auth", require("./routes/userRoutes"))
 app.use("/api/orders", require("./routes/orderRoutes"))
+app.use("/api/analytics", require("./routes/analyticsRoutes"))
 app.use("/api", require("./routes/productRoutes"))
 
 //Error Handling

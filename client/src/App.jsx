@@ -24,6 +24,7 @@ import ManagerDashboard from './pages/manager/ManagerDashboard';
 import InventoryManager from './pages/manager/InventoryManager';
 import PointOfSale from './pages/manager/PointOfSale';
 import OrderHistory from './pages/manager/OrderHistory';
+import Analytics from './pages/manager/Analytics';
 
 function App() {
   const { isAuthenticated, role } = useSelector(state => state.auth);
@@ -60,6 +61,7 @@ function App() {
           <Route path="/manager/inventory" element={<ManagerRoute><InventoryManager /></ManagerRoute>} />
           <Route path="/manager/pos" element={<ManagerRoute><PointOfSale /></ManagerRoute>} />
           <Route path="/manager/orders" element={<ManagerRoute><OrderHistory /></ManagerRoute>} />
+          <Route path="/manager/analytics" element={<ManagerRoute><Analytics /></ManagerRoute>} />
 
         </Route>
       </>

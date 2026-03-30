@@ -7,10 +7,11 @@ import toast from 'react-hot-toast';
 const InventoryManager = () => {
     const dispatch = useDispatch();
     const { products, status } = useSelector(state => state.inventory);
-    const { role } = useSelector(state => state.auth);
+    const { role, branch } = useSelector(state => state.auth);
     
     const [filter, setFilter] = useState('all');
     const [showForm, setShowForm] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         dispatch(fetchProducts());
@@ -32,10 +33,26 @@ const InventoryManager = () => {
         }
     };
 
+    // Client-side search filter
+    const filteredProducts = products.filter(p => {
+        const q = searchQuery.toLowerCase();
+        return p.name.toLowerCase().includes(q) || (p.category && p.category.toLowerCase().includes(q));
+    });
+
+    // Branch overview stats
+    const totalItems = products.length;
+    const totalUnits = products.reduce((sum, p) => sum + p.quantity, 0);
+    const lowStockItems = products.filter(p => p.quantity <= 5).length;
+    const totalStockValue = products.reduce((sum, p) => sum + (p.sellingPrice * p.quantity), 0);
+    const totalCostValue = products.reduce((sum, p) => sum + (p.purchasePrice * p.quantity), 0);
+
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h1 style={{ fontSize: '2rem', textAlign: 'left', margin: 0 }}>Branch Inventory</h1>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h1 style={{ fontSize: '2rem', textAlign: 'left', margin: 0 }}>
+                    Branch Inventory {branch && <span className="text-sm text-gray-500 font-normal">— {branch}</span>}
+                </h1>
                 {role === 'manager' && (
                     <button className="btn btn-primary" onClick={() => setShowForm(true)}>
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path></svg>
@@ -44,10 +61,47 @@ const InventoryManager = () => {
                 )}
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-                <button className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('all')}>All Items</button>
-                <button className={`btn ${filter === 'bike' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('bike')}>Bikes</button>
-                <button className={`btn ${filter === 'spare_part' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('spare_part')}>Spare Parts</button>
+            {/* Branch Overview Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                    <p className="text-xs text-gray-500 font-medium mb-1">Product Types</p>
+                    <p className="text-2xl font-bold text-gray-800">{status === 'loading' ? '...' : totalItems}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                    <p className="text-xs text-gray-500 font-medium mb-1">Total Units</p>
+                    <p className="text-2xl font-bold text-gray-800">{status === 'loading' ? '...' : totalUnits}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                    <p className="text-xs text-gray-500 font-medium mb-1">Stock Value (Sell)</p>
+                    <p className="text-2xl font-bold text-[#0B7C56]">{status === 'loading' ? '...' : `$${totalStockValue.toLocaleString()}`}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                    <p className="text-xs text-gray-500 font-medium mb-1">Stock Value (Cost)</p>
+                    <p className="text-2xl font-bold text-gray-800">{status === 'loading' ? '...' : `$${totalCostValue.toLocaleString()}`}</p>
+                </div>
+                <div className={`rounded-xl border shadow-sm p-4 ${lowStockItems > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
+                    <p className="text-xs text-gray-500 font-medium mb-1">Low Stock</p>
+                    <p className={`text-2xl font-bold ${lowStockItems > 0 ? 'text-red-500' : 'text-gray-800'}`}>{status === 'loading' ? '...' : lowStockItems}</p>
+                </div>
+            </div>
+
+            {/* Filters + Search Row */}
+            <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('all')}>All Items</button>
+                    <button className={`btn ${filter === 'bike' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('bike')}>Bikes</button>
+                    <button className={`btn ${filter === 'spare_part' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('spare_part')}>Spare Parts</button>
+                </div>
+                <div className="relative w-72">
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input
+                        type="text"
+                        placeholder="Search inventory..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm text-sm focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
+                    />
+                </div>
             </div>
 
             {status === 'loading' ? (
@@ -67,12 +121,14 @@ const InventoryManager = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.length === 0 ? (
+                            {filteredProducts.length === 0 ? (
                                 <tr>
-                                    <td colSpan={role === 'manager' ? 7 : 6} style={{ textAlign: 'center', padding: '24px' }}>No inventory found.</td>
+                                    <td colSpan={role === 'manager' ? 7 : 6} style={{ textAlign: 'center', padding: '24px' }}>
+                                        {searchQuery ? `No results for "${searchQuery}"` : 'No inventory found.'}
+                                    </td>
                                 </tr>
                             ) : (
-                                products.map(item => (
+                                filteredProducts.map(item => (
                                     <tr key={item._id}>
                                         <td>
                                             <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', background: 'var(--input-bg)' }}>

@@ -51,6 +51,9 @@ const Sidebar = () => {
                     <Link to="/manager/orders" className={`nav-item ${isActive('/manager/orders')}`}>
                         Order History
                     </Link>
+                    <Link to="/manager/analytics" className={`nav-item ${isActive('/manager/analytics')}`}>
+                        Analytics
+                    </Link>
                 </>
             )}
             
