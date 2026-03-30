@@ -4,14 +4,13 @@ const Product = require('../models/Product')
 const getBranchAnalytics = async (req, res, next) => {
     try {
         const { from, to } = req.query
-        const branch = req.user.role === 'manager' ? req.user.branch : req.query.branch
+        const isManager = req.user.role === 'manager'
+        const branch = isManager ? req.user.branch : req.query.branch
 
-        if (!branch) {
-            return res.status(400).json({ message: 'Branch is required' })
-        }
-
-        // ── Inventory Stats ──
-        const products = await Product.find({ branch })
+        // ── 1. Inventory Stats ──
+        const inventoryFilter = branch ? { branch } : {}
+        const products = await Product.find(inventoryFilter)
+        
         const totalProducts = products.length
         const totalStockQty = products.reduce((sum, p) => sum + p.quantity, 0)
         const totalStockValue = products.reduce((sum, p) => sum + (p.sellingPrice * p.quantity), 0)
@@ -22,15 +21,15 @@ const getBranchAnalytics = async (req, res, next) => {
         const categoryBreakdown = {}
         products.forEach(p => {
             if (!categoryBreakdown[p.category]) {
-                categoryBreakdown[p.category] = { count: 0, qty: 0, value: 0, profit: 0 }
+                categoryBreakdown[p.category] = { count: 0, qty: 0, value: 0, profit: 0, revenue: 0 }
             }
             categoryBreakdown[p.category].count++
             categoryBreakdown[p.category].qty += p.quantity
-            categoryBreakdown[p.category].value += p.sellingPrice * p.quantity
+            categoryBreakdown[p.category].value += p.sellingPrice * p.quantity // Total potential value on shelf
         })
 
-        // ── Sales Stats (date-filtered) ──
-        const orderFilter = { branch }
+        // ── 2. Sales Stats (date-filtered) ──
+        const orderFilter = branch ? { branch } : {}
         if (from || to) {
             orderFilter.createdAt = {}
             if (from) orderFilter.createdAt.$gte = new Date(from)
@@ -49,35 +48,60 @@ const getBranchAnalytics = async (req, res, next) => {
         const totalItemsSold = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0)
         const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
+        // Time-series & Grouped Stats for Charts
+        const dailyData = {}
+        const branchPerformance = {}
         const productSales = {}
+
         orders.forEach(order => {
+            // Trend Data (Day-by-Day)
+            const dateKey = new Date(order.createdAt).toISOString().split('T')[0]
+            if (!dailyData[dateKey]) dailyData[dateKey] = { date: dateKey, revenue: 0, profit: 0, orders: 0 }
+            dailyData[dateKey].revenue += order.totalAmount
+            dailyData[dateKey].orders++
+
+            // Branch Comparison (Only if global)
+            const b = order.branch
+            if (!branchPerformance[b]) branchPerformance[b] = { name: b, revenue: 0, profit: 0, orders: 0 }
+            branchPerformance[b].revenue += order.totalAmount
+            branchPerformance[b].orders++
+
+            let orderProfit = 0
             order.items.forEach(item => {
                 const id = item.product?._id?.toString() || item.product?.toString()
+                const purchaseP = item.purchasePrice || item.product?.purchasePrice || 0;
+                const itemRevenue = item.price * item.quantity
+                const itemProfit = (item.price - purchaseP) * item.quantity
+                orderProfit += itemProfit
+
+                // Product Sales
                 if (!productSales[id]) {
                     productSales[id] = {
                         name: item.product?.name || 'Unknown',
-                        category: item.product?.category || '',
+                        category: item.product?.category || 'other',
                         qtySold: 0,
                         revenue: 0,
                         profit: 0
                     }
                 }
-                const purchaseP = item.purchasePrice || item.product?.purchasePrice || 0;
                 productSales[id].qtySold += item.quantity
-                productSales[id].revenue += item.price * item.quantity
-                productSales[id].profit += (item.price - purchaseP) * item.quantity;
-                
-                // Also add to category profit
+                productSales[id].revenue += itemRevenue
+                productSales[id].profit += itemProfit
+
+                // Category Profit / Revenue
                 const cat = item.product?.category || 'other'
                 if (categoryBreakdown[cat]) {
-                    if (!categoryBreakdown[cat].profit) categoryBreakdown[cat].profit = 0;
-                    categoryBreakdown[cat].profit += (item.price - purchaseP) * item.quantity;
+                    categoryBreakdown[cat].revenue += itemRevenue
+                    categoryBreakdown[cat].profit += itemProfit
                 }
             })
+            dailyData[dateKey].profit += orderProfit
+            branchPerformance[b].profit += orderProfit
         })
-        const topProducts = Object.values(productSales)
-            .sort((a, b) => b.revenue - a.revenue)
-            .slice(0, 10)
+
+        const trendData = Object.values(dailyData).sort((a, b) => a.date.localeCompare(b.date))
+        const branchComparison = Object.values(branchPerformance).sort((a, b) => b.revenue - a.revenue)
+        const topProducts = Object.values(productSales).sort((a, b) => b.revenue - a.revenue).slice(0, 10)
 
         res.status(200).json({
             inventory: {
@@ -96,6 +120,11 @@ const getBranchAnalytics = async (req, res, next) => {
                 totalItemsSold,
                 avgOrderValue,
                 topProducts
+            },
+            charts: {
+                trendData,
+                branchComparison,
+                categoryData: Object.entries(categoryBreakdown).map(([name, data]) => ({ name, ...data }))
             }
         })
     } catch (error) {

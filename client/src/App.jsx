@@ -21,6 +21,7 @@ import ResetPassword from './pages/ResetPassword';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageManagers from './pages/admin/ManageManagers';
 import AdminOrders from './pages/admin/AdminOrders';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
 import ManagerDashboard from './pages/manager/ManagerDashboard';
 import InventoryManager from './pages/manager/InventoryManager';
 import PointOfSale from './pages/manager/PointOfSale';
@@ -57,6 +58,7 @@ function App() {
           <Route path="/admin/managers" element={<AdminRoute><ManageManagers /></AdminRoute>} />
           <Route path="/admin/inventory" element={<AdminRoute><InventoryManager /></AdminRoute>} />
           <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
+          <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
           
           {/* Manager Routes */}
           <Route path="/manager" element={<ManagerRoute><ManagerDashboard /></ManagerRoute>} />
