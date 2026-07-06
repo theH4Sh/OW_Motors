@@ -42,6 +42,25 @@ export const addProduct = createAsyncThunk(
     }
 );
 
+export const updateProduct = createAsyncThunk(
+    'inventory/updateProduct',
+    async ({ id, formData }, { getState, rejectWithValue }) => {
+        try {
+            const { token } = getState().auth;
+            const response = await fetch(`${API_URL}/product/${id}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData,
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || data.error || 'Failed to update');
+            return data;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
 export const deleteProduct = createAsyncThunk(
     'inventory/deleteProduct',
     async (id, { getState, rejectWithValue }) => {
@@ -81,6 +100,10 @@ const inventorySlice = createSlice({
             })
             .addCase(addProduct.fulfilled, (state, action) => {
                 state.products.push(action.payload);
+            })
+            .addCase(updateProduct.fulfilled, (state, action) => {
+                const index = state.products.findIndex(p => p._id === action.payload._id);
+                if (index !== -1) state.products[index] = action.payload;
             })
             .addCase(deleteProduct.fulfilled, (state, action) => {
                 state.products = state.products.filter(p => p._id !== action.payload);
