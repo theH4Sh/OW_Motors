@@ -51,7 +51,7 @@ const OrderHistory = () => {
                                         {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
                                     </td>
                                     <td className="py-4 px-6 font-bold text-gray-900">
-                                        ${order.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                                        PKR {order.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}
                                     </td>
                                     <td className="py-4 px-6 text-right">
                                         <button 

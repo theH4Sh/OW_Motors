@@ -64,8 +64,8 @@ const Invoice = ({ order, onClose }) => {
                                         <p className="text-sm text-gray-500 capitalize">{item.product.category?.replace('_', ' ')}</p>
                                     </td>
                                     <td className="py-4 text-center font-medium">{item.quantity}</td>
-                                    <td className="py-4 text-right">${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                    <td className="py-4 text-right font-semibold">${(item.quantity * item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                    <td className="py-4 text-right">PKR {item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                    <td className="py-4 text-right font-semibold">PKR {(item.quantity * item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -77,8 +77,8 @@ const Invoice = ({ order, onClose }) => {
                             <p className="text-gray-500 font-medium pt-4 border-t border-gray-100">Total Due</p>
                         </div>
                         <div className="text-right space-y-2">
-                            <p className="font-semibold">${order.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
-                            <p className="font-bold text-[#0B7C56] text-xl pt-4 border-t border-gray-100">${order.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                            <p className="font-semibold">PKR {order.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                            <p className="font-bold text-[#0B7C56] text-xl pt-4 border-t border-gray-100">PKR {order.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
                         </div>
                     </div>
                     
