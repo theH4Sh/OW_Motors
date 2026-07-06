@@ -88,12 +88,12 @@ const ProductFormModal = ({ onClose, onProductAdded }) => {
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">Purchase Price ($)</label>
+                            <label className="form-label">Purchase Price (PKR)</label>
                             <input required name="purchasePrice" type="number" min="0" step="0.01" className="form-input" value={formData.purchasePrice} onChange={handleChange} />
                         </div>
 
                         <div className="form-group">
-                            <label className="form-label">Selling Price ($)</label>
+                            <label className="form-label">Selling Price (PKR)</label>
                             <input required name="sellingPrice" type="number" min="0" step="0.01" className="form-input" value={formData.sellingPrice} onChange={handleChange} />
                         </div>
 

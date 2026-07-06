@@ -73,11 +73,11 @@ const InventoryManager = () => {
                 </div>
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
                     <p className="text-xs text-gray-500 font-medium mb-1">Stock Value (Sell)</p>
-                    <p className="text-2xl font-bold text-[#0B7C56]">{status === 'loading' ? '...' : `$${totalStockValue.toLocaleString()}`}</p>
+                    <p className="text-2xl font-bold text-[#0B7C56]">{status === 'loading' ? '...' : `PKR ${totalStockValue.toLocaleString()}`}</p>
                 </div>
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
                     <p className="text-xs text-gray-500 font-medium mb-1">Stock Value (Cost)</p>
-                    <p className="text-2xl font-bold text-gray-800">{status === 'loading' ? '...' : `$${totalCostValue.toLocaleString()}`}</p>
+                    <p className="text-2xl font-bold text-gray-800">{status === 'loading' ? '...' : `PKR ${totalCostValue.toLocaleString()}`}</p>
                 </div>
                 <div className={`rounded-xl border shadow-sm p-4 ${lowStockItems > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
                     <p className="text-xs text-gray-500 font-medium mb-1">Low Stock</p>
@@ -142,8 +142,8 @@ const InventoryManager = () => {
                                                 {item.quantity} Units
                                             </span>
                                         </td>
-                                        <td>${item.purchasePrice}</td>
-                                        <td>${item.sellingPrice}</td>
+                                        <td>PKR {item.purchasePrice.toLocaleString()}</td>
+                                        <td>PKR {item.sellingPrice.toLocaleString()}</td>
                                         {role === 'manager' && (
                                             <td>
                                                 <div style={{ display: 'flex', gap: '8px' }}>
