@@ -20,6 +20,11 @@ const ProductFormModal = ({ onClose, onProductAdded }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'purchasePrice' || name === 'sellingPrice') {
+            const wholeNumber = value === '' ? '' : String(Math.max(0, Math.floor(Number(value))));
+            setFormData(prev => ({ ...prev, [name]: wholeNumber }));
+            return;
+        }
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
@@ -89,12 +94,12 @@ const ProductFormModal = ({ onClose, onProductAdded }) => {
 
                         <div className="form-group">
                             <label className="form-label">Purchase Price (PKR)</label>
-                            <input required name="purchasePrice" type="number" min="0" step="0.01" className="form-input" value={formData.purchasePrice} onChange={handleChange} />
+                            <input required name="purchasePrice" type="number" min="0" step="1" className="form-input" value={formData.purchasePrice} onChange={handleChange} />
                         </div>
 
                         <div className="form-group">
                             <label className="form-label">Selling Price (PKR)</label>
-                            <input required name="sellingPrice" type="number" min="0" step="0.01" className="form-input" value={formData.sellingPrice} onChange={handleChange} />
+                            <input required name="sellingPrice" type="number" min="0" step="1" className="form-input" value={formData.sellingPrice} onChange={handleChange} />
                         </div>
 
                         <div className="form-group" style={{ gridColumn: 'span 2' }}>
