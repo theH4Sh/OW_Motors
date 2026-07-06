@@ -96,8 +96,8 @@ const ProductFormModal = ({ onClose, onProductAdded, product = null }) => {
                 </div>
 
                 <div className="modal-body">
-                    <form id="productForm" onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <form id="productForm" onSubmit={handleSubmit} className="product-form-grid">
+                        <div className="form-group form-span-2">
                             <label className="form-label">Product Name</label>
                             <input required name="name" type="text" className="form-input" value={formData.name} onChange={handleChange} />
                         </div>
@@ -126,7 +126,7 @@ const ProductFormModal = ({ onClose, onProductAdded, product = null }) => {
                         </div>
 
                         {role === 'admin' && (
-                            <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                            <div className="form-group form-span-2">
                                 <label className="form-label">Branch</label>
                                 <input
                                     required
@@ -140,12 +140,12 @@ const ProductFormModal = ({ onClose, onProductAdded, product = null }) => {
                             </div>
                         )}
 
-                        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                        <div className="form-group form-span-2">
                             <label className="form-label">Description</label>
                             <textarea name="description" className="form-input" value={formData.description} onChange={handleChange} rows="3" />
                         </div>
 
-                        <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                        <div className="form-group form-span-2">
                             <label className="form-label">
                                 Product Image{isEditing ? ' (leave empty to keep current)' : ''}
                             </label>

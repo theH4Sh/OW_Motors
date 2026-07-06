@@ -49,17 +49,15 @@ const AdminOrders = () => {
 
     return (
         <div className="pb-10">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800">All Orders</h1>
+                    <h1 className="page-title">All Orders</h1>
                     <p className="text-sm text-gray-500 mt-1">{filteredOrders.length} orders • {fmt(totalRevenue)} total</p>
                 </div>
             </div>
 
-            {/* Filters Row */}
-            <div className="flex items-center gap-4 mb-6 flex-wrap">
-                {/* Branch Filter */}
-                <div className="flex gap-2 flex-wrap">
+            <div className="filter-toolbar">
+                <div className="filter-buttons">
                     <button
                         onClick={() => setBranchFilter('all')}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${branchFilter === 'all'
@@ -77,8 +75,7 @@ const AdminOrders = () => {
                     ))}
                 </div>
 
-                {/* Search */}
-                <div className="relative w-72 ml-auto">
+                <div className="search-field">
                     <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     <input
                         type="text"
@@ -96,9 +93,45 @@ const AdminOrders = () => {
                     <p>Loading orders...</p>
                 </div>
             ) : (
-                <div className="dash-panel">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                <>
+                    <div className="mobile-list-wrap space-y-3 mb-4">
+                        {filteredOrders.length === 0 ? (
+                            <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+                                {searchQuery ? `No orders matching "${searchQuery}"` : 'No orders found.'}
+                            </div>
+                        ) : (
+                            filteredOrders.map(order => (
+                                <div key={order._id} className="mobile-card">
+                                    <div className="flex justify-between items-start gap-3">
+                                        <div>
+                                            <p className="font-semibold text-gray-900">{order.name}</p>
+                                            <p className="text-sm text-gray-500">{order.phone}</p>
+                                        </div>
+                                        <p className="font-bold text-[#0B7C56]">{fmt(order.totalAmount)}</p>
+                                    </div>
+                                    <dl className="mobile-card-meta">
+                                        <dt>Branch</dt>
+                                        <dd>{order.branch}</dd>
+                                        <dt>Date</dt>
+                                        <dd>{new Date(order.createdAt).toLocaleDateString()}</dd>
+                                        <dt>Items</dt>
+                                        <dd>{order.items.reduce((s, i) => s + i.quantity, 0)}</dd>
+                                    </dl>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedOrder(order)}
+                                        className="btn btn-secondary w-full mt-3"
+                                    >
+                                        View Invoice
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    <div className="desktop-table-wrap dash-panel">
+                    <div className="data-table-wrap">
+                        <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-slate-50 border-b border-gray-200 text-gray-500">
                                 <tr>
                                     <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Order ID</th>
@@ -146,11 +179,12 @@ const AdminOrders = () => {
                         </table>
                     </div>
                 </div>
+                </>
             )}
 
             {/* Invoice Modal */}
             {selectedOrder && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
+                <div className="fixed inset-0 z-[3000] overflow-y-auto">
                     <Invoice order={selectedOrder} onClose={() => setSelectedOrder(null)} />
                 </div>
             )}

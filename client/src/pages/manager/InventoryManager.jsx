@@ -65,14 +65,13 @@ const InventoryManager = () => {
     const totalStockValue = products.reduce((sum, p) => sum + (p.sellingPrice * p.quantity), 0);
     const totalCostValue = products.reduce((sum, p) => sum + (p.purchasePrice * p.quantity), 0);
 
-    const colSpan = 6 + (isAdmin ? 1 : 0) + (canManage ? 1 : 0);
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1 style={{ fontSize: '2rem', textAlign: 'left', margin: 0 }}>
+            <div className="page-header">
+                <h1 className="page-title">
                     {isAdmin ? 'Global Inventory' : (
-                        <>Branch Inventory {branch && <span className="text-sm text-gray-500 font-normal">— {branch}</span>}</>
+                        <>Branch Inventory {branch && <span className="text-sm text-gray-500 font-normal block sm:inline mt-1 sm:mt-0">— {branch}</span>}</>
                     )}
                 </h1>
                 {role === 'manager' && (
@@ -84,35 +83,35 @@ const InventoryManager = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <div className="stat-card bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-4">
                     <p className="text-xs text-gray-500 font-medium mb-1">Product Types</p>
-                    <p className="text-2xl font-bold text-gray-800">{status === 'loading' ? '...' : totalItems}</p>
+                    <p className="stat-value text-gray-800">{status === 'loading' ? '...' : totalItems}</p>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <div className="stat-card bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-4">
                     <p className="text-xs text-gray-500 font-medium mb-1">Total Units</p>
-                    <p className="text-2xl font-bold text-gray-800">{status === 'loading' ? '...' : totalUnits}</p>
+                    <p className="stat-value text-gray-800">{status === 'loading' ? '...' : totalUnits}</p>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <div className="stat-card bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-4 col-span-2 sm:col-span-1">
                     <p className="text-xs text-gray-500 font-medium mb-1">Stock Value (Sell)</p>
-                    <p className="text-2xl font-bold text-[#0B7C56]">{status === 'loading' ? '...' : `PKR ${totalStockValue.toLocaleString()}`}</p>
+                    <p className="stat-value text-[#0B7C56]">{status === 'loading' ? '...' : `PKR ${totalStockValue.toLocaleString()}`}</p>
                 </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+                <div className="stat-card bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-4 col-span-2 sm:col-span-1">
                     <p className="text-xs text-gray-500 font-medium mb-1">Stock Value (Cost)</p>
-                    <p className="text-2xl font-bold text-gray-800">{status === 'loading' ? '...' : `PKR ${totalCostValue.toLocaleString()}`}</p>
+                    <p className="stat-value text-gray-800">{status === 'loading' ? '...' : `PKR ${totalCostValue.toLocaleString()}`}</p>
                 </div>
-                <div className={`rounded-xl border shadow-sm p-4 ${lowStockItems > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
+                <div className={`stat-card rounded-xl border shadow-sm p-3 sm:p-4 col-span-2 sm:col-span-1 ${lowStockItems > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
                     <p className="text-xs text-gray-500 font-medium mb-1">Low Stock</p>
-                    <p className={`text-2xl font-bold ${lowStockItems > 0 ? 'text-red-500' : 'text-gray-800'}`}>{status === 'loading' ? '...' : lowStockItems}</p>
+                    <p className={`stat-value ${lowStockItems > 0 ? 'text-red-500' : 'text-gray-800'}`}>{status === 'loading' ? '...' : lowStockItems}</p>
                 </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
-                <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="filter-toolbar">
+                <div className="filter-buttons">
                     <button className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('all')}>All Items</button>
                     <button className={`btn ${filter === 'bike' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('bike')}>Bikes</button>
                     <button className={`btn ${filter === 'spare_part' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => handleFilterChange('spare_part')}>Spare Parts</button>
                 </div>
-                <div className="relative w-72">
+                <div className="search-field">
                     <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     <input
                         type="text"
@@ -126,34 +125,69 @@ const InventoryManager = () => {
 
             {status === 'loading' ? (
                 <p>Loading inventory...</p>
+            ) : filteredProducts.length === 0 ? (
+                <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+                    {searchQuery ? `No results for "${searchQuery}"` : 'No inventory found.'}
+                </div>
             ) : (
-                <div className="glass-card table-container">
-                    <table className="glass-table">
-                        <thead>
-                            <tr>
-                                <th>Image</th>
-                                <th>Item Name</th>
-                                {isAdmin && <th>Branch</th>}
-                                <th>Category</th>
-                                <th>Quantity</th>
-                                <th>Purchase Price</th>
-                                <th>Selling Price</th>
-                                {canManage && <th>Actions</th>}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredProducts.length === 0 ? (
+                <>
+                    {/* Mobile card list */}
+                    <div className="mobile-list-wrap">
+                        {filteredProducts.map(item => (
+                            <div key={item._id} className="mobile-card">
+                                <div className="mobile-card-top">
+                                    <div className="mobile-card-thumb">
+                                        <img src={`${IMG_BASE}/images/${item.image}`} alt={item.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="mobile-card-body">
+                                        <p className="font-semibold text-gray-900 leading-snug">{item.name}</p>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            <span className="badge badge-warning">{item.category}</span>
+                                            {isAdmin && (
+                                                <span className="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">{item.branch}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <dl className="mobile-card-meta">
+                                    <dt>Quantity</dt>
+                                    <dd className={item.quantity <= 3 ? 'text-red-500' : ''}>{item.quantity} units</dd>
+                                    <dt>Purchase</dt>
+                                    <dd>PKR {item.purchasePrice.toLocaleString()}</dd>
+                                    <dt>Selling</dt>
+                                    <dd className="text-[#0B7C56]">PKR {item.sellingPrice.toLocaleString()}</dd>
+                                </dl>
+                                {canManage && (
+                                    <div className="mobile-card-actions">
+                                        <button type="button" className="btn btn-secondary flex-1" onClick={() => openEditForm(item)}>Edit</button>
+                                        <button type="button" className="btn btn-danger flex-1" onClick={() => handleDelete(item._id)}>Delete</button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop table */}
+                    <div className="desktop-table-wrap glass-card table-container">
+                        <table className="glass-table">
+                            <thead>
                                 <tr>
-                                    <td colSpan={colSpan} style={{ textAlign: 'center', padding: '24px' }}>
-                                        {searchQuery ? `No results for "${searchQuery}"` : 'No inventory found.'}
-                                    </td>
+                                    <th>Image</th>
+                                    <th>Item Name</th>
+                                    {isAdmin && <th>Branch</th>}
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Purchase Price</th>
+                                    <th>Selling Price</th>
+                                    {canManage && <th>Actions</th>}
                                 </tr>
-                            ) : (
-                                filteredProducts.map(item => (
+                            </thead>
+                            <tbody>
+                                {filteredProducts.map(item => (
                                     <tr key={item._id}>
                                         <td>
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', background: 'var(--input-bg)' }}>
-                                                <img src={`${IMG_BASE}/images/${item.image}`} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <div className="mobile-card-thumb">
+                                                <img src={`${IMG_BASE}/images/${item.image}`} alt={item.name} className="w-full h-full object-cover" />
                                             </div>
                                         </td>
                                         <td style={{ fontWeight: '500' }}>{item.name}</td>
@@ -187,11 +221,11 @@ const InventoryManager = () => {
                                             </td>
                                         )}
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
             )}
 
             {showForm && (

@@ -125,7 +125,7 @@ const PointOfSale = () => {
             <div className="mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Point of Sale</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Point of Sale</h1>
                         <p className="text-gray-500 mt-1">
                             {branch ? (
                                 <>Selling at <span className="font-semibold text-[#0B7C56]">{branch}</span> branch</>
@@ -147,13 +147,13 @@ const PointOfSale = () => {
                 </div>
             </div>
 
-            <div className="flex flex-col xl:flex-row gap-6 min-h-[calc(100vh-200px)]">
+            <div className="flex flex-col lg:flex-row gap-6">
                 {/* Product catalog */}
                 <div className="flex-1 flex flex-col min-h-0">
                     {/* Search & filters */}
                     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 mb-4">
                         <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                            <div className="relative flex-1 max-w-md">
+                            <div className="relative flex-1 w-full">
                                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
@@ -284,8 +284,8 @@ const PointOfSale = () => {
                 </div>
 
                 {/* Cart panel */}
-                <div className="w-full xl:w-[420px] shrink-0">
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-xl flex flex-col xl:sticky xl:top-4">
+                <div className="w-full lg:w-[420px] shrink-0">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-xl flex flex-col lg:sticky lg:top-4">
                         {/* Cart header */}
                         <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-slate-50 to-emerald-50/30 shrink-0">
                             <div className="flex items-center justify-between">
@@ -450,7 +450,7 @@ const PointOfSale = () => {
             </div>
 
             {completedOrder && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
+                <div className="fixed inset-0 z-[3000] overflow-y-auto">
                     <Invoice order={completedOrder} onClose={() => setCompletedOrder(null)} />
                 </div>
             )}

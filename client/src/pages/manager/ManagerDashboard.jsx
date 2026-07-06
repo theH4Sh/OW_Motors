@@ -35,10 +35,10 @@ const ManagerDashboard = () => {
         <div className="pb-10">
             {/* Welcome Header */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                <h1 className="page-title mb-1">
                     {greeting()}, {username} 👋
                 </h1>
-                <p className="text-gray-500 text-lg">
+                <p className="text-gray-500 text-base sm:text-lg">
                     Here's what's happening at <span className="font-semibold text-[#0B7C56]">{branch}</span> branch today.
                 </p>
             </div>

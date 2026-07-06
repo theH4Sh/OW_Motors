@@ -80,10 +80,10 @@ const AdminDashboard = () => {
         <div className="pb-10">
             {/* Welcome */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                <h1 className="page-title mb-1">
                     {greeting()}, {username} 👋
                 </h1>
-                <p className="text-gray-500 text-lg">
+                <p className="text-gray-500 text-base sm:text-lg">
                     Here's a global overview of <span className="font-semibold text-[#0B7C56]">OW Motors</span> operations.
                 </p>
             </div>
@@ -192,7 +192,7 @@ const AdminDashboard = () => {
                             </h2>
                             <span className="text-sm text-gray-500">{Object.keys(branchMap).length} branches</span>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto data-table-wrap">
                             <table className="w-full text-left">
                                 <thead className="bg-slate-50 border-b border-gray-200 text-gray-500">
                                     <tr>
@@ -329,7 +329,7 @@ const AdminDashboard = () => {
                             </h2>
                             <Link to="/admin/orders" className="text-sm font-semibold text-[#0B7C56] hover:underline">View All →</Link>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto data-table-wrap">
                             <table className="w-full text-left">
                                 <thead className="bg-slate-50 border-b border-gray-200 text-gray-500">
                                     <tr>
