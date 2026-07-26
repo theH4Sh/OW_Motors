@@ -292,6 +292,7 @@ const AdminDashboard = () => {
                                     <span className="inline-block w-2 h-2 rounded-full bg-violet-500 mr-2"></span>
                                     Active Managers
                                 </h2>
+                                <span className="text-xs font-semibold text-gray-400">{totalManagers}</span>
                             </div>
                             <div className="dash-panel-body">
                                 {managers.length === 0 ? (

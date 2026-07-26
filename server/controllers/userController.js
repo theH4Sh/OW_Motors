@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const User = require('../models/userModel')
 const jwt = require('jsonwebtoken')
 const transporter = require('../utils/mailer')
@@ -67,6 +68,30 @@ const getAllManagers = async (req, res, next) => {
         res.status(200).json(managers);
     } catch (error) {
         next(error);
+    }
+}
+
+const deleteManager = async (req, res, next) => {
+    try {
+        const { id } = req.params
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            const error = new Error('Invalid manager id')
+            error.status = 400
+            return next(error)
+        }
+
+        const manager = await User.findById(id)
+        if (!manager || manager.role !== 'manager') {
+            const error = new Error('Manager not found')
+            error.status = 404
+            return next(error)
+        }
+
+        await User.findByIdAndDelete(id)
+        res.status(200).json({ message: 'Manager deleted successfully' })
+    } catch (error) {
+        next(error)
     }
 }
 
@@ -154,4 +179,4 @@ const resetPassword = async (req, res, next) => {
         next(error)
     }
 }
-module.exports = { loginUser, signUpUser, getUser, verifyEmail, forgotPassword, resetPassword, getAllManagers }
+module.exports = { loginUser, signUpUser, getUser, verifyEmail, forgotPassword, resetPassword, getAllManagers, deleteManager }
