@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addProduct, updateProduct } from '../slice/inventorySlice';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../utils/apiError';
 
 const IMG_BASE = import.meta.env.VITE_API?.replace('/api', '') || 'http://localhost:8000';
 
@@ -79,7 +80,7 @@ const ProductFormModal = ({ onClose, onProductAdded, product = null }) => {
             onProductAdded?.();
             onClose();
         } catch (error) {
-            toast.error(error || `Failed to ${isEditing ? 'update' : 'add'} product`);
+            toast.error(getErrorMessage(error, `Failed to ${isEditing ? 'update' : 'add'} product`));
         } finally {
             setLoading(false);
         }

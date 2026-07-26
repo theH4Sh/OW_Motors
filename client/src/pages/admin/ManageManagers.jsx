@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { generateStrongPassword, getPasswordStrength } from '../../utils/password';
+import { getErrorMessage } from '../../utils/apiError';
 
 const API = import.meta.env.VITE_API || 'http://localhost:8000/api/';
 
@@ -31,7 +32,11 @@ const ManageManagers = () => {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             const data = await res.json();
-            if (res.ok) setManagers(data);
+            if (res.ok) {
+                setManagers(data);
+            } else {
+                toast.error(getErrorMessage(data, 'Failed to load managers'));
+            }
         } catch {
             toast.error('Failed to load managers');
         }
@@ -89,7 +94,7 @@ const ManageManagers = () => {
                 setShowPassword(false);
                 fetchManagers();
             } else {
-                toast.error(data.error || 'Failed to register');
+                toast.error(getErrorMessage(data, 'Failed to register manager'));
             }
         } catch {
             toast.error('Registration failed');
@@ -119,7 +124,7 @@ const ManageManagers = () => {
                 setManagers(prev => prev.filter(m => m._id !== managerToDelete._id));
                 setManagerToDelete(null);
             } else {
-                toast.error(data.error || data.message || 'Failed to delete manager');
+                toast.error(getErrorMessage(data, 'Failed to delete manager'));
             }
         } catch {
             toast.error('Failed to delete manager');

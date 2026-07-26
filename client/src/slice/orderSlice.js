@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { getErrorMessage } from '../utils/apiError';
 
 const API_URL = 'http://localhost:8000/api';
 
@@ -9,17 +10,17 @@ export const createOrder = createAsyncThunk(
             const { token } = getState().auth;
             const response = await fetch(`${API_URL}/orders/create-order`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
+                    Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify(orderData)
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to create order');
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to create order'));
             return data.order;
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to create order'));
         }
     }
 );
@@ -30,13 +31,13 @@ export const fetchOrdersByBranch = createAsyncThunk(
         try {
             const { token } = getState().auth;
             const response = await fetch(`${API_URL}/orders/get-all-orders-by-branch/${branch}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` }
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to fetch orders');
-            return data;
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to fetch orders'));
+            return Array.isArray(data) ? data : [];
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to fetch orders'));
         }
     }
 );
@@ -47,13 +48,13 @@ export const fetchAllOrders = createAsyncThunk(
         try {
             const { token } = getState().auth;
             const response = await fetch(`${API_URL}/orders/get-all-orders`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` }
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to fetch orders');
-            return data;
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to fetch orders'));
+            return Array.isArray(data) ? data : [];
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to fetch orders'));
         }
     }
 );
@@ -68,10 +69,10 @@ export const fetchInstallmentOrders = createAsyncThunk(
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to fetch installments');
-            return data;
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to fetch installments'));
+            return Array.isArray(data) ? data : [];
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to fetch installments'));
         }
     }
 );
@@ -90,10 +91,10 @@ export const recordInstallmentPayment = createAsyncThunk(
                 body: JSON.stringify({ amount, note })
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to record payment');
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to record payment'));
             return data.order;
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to record payment'));
         }
     }
 );
@@ -113,20 +114,28 @@ const orderSlice = createSlice({
             .addCase(createOrder.fulfilled, (state, action) => {
                 state.orders.unshift(action.payload);
             })
-            .addCase(fetchOrdersByBranch.pending, (state) => { state.status = 'loading'; })
+            .addCase(fetchOrdersByBranch.pending, (state) => {
+                state.status = 'loading';
+                state.error = null;
+            })
             .addCase(fetchOrdersByBranch.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.orders = action.payload;
+                state.error = null;
             })
             .addCase(fetchOrdersByBranch.rejected, (state, action) => {
                 state.status = 'failed';
                 state.orders = [];
                 state.error = action.payload;
             })
-            .addCase(fetchAllOrders.pending, (state) => { state.status = 'loading'; })
+            .addCase(fetchAllOrders.pending, (state) => {
+                state.status = 'loading';
+                state.error = null;
+            })
             .addCase(fetchAllOrders.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.orders = action.payload;
+                state.error = null;
             })
             .addCase(fetchAllOrders.rejected, (state, action) => {
                 state.status = 'failed';
@@ -135,10 +144,12 @@ const orderSlice = createSlice({
             })
             .addCase(fetchInstallmentOrders.pending, (state) => {
                 state.installmentsStatus = 'loading';
+                state.error = null;
             })
             .addCase(fetchInstallmentOrders.fulfilled, (state, action) => {
                 state.installmentsStatus = 'succeeded';
                 state.installments = action.payload;
+                state.error = null;
             })
             .addCase(fetchInstallmentOrders.rejected, (state, action) => {
                 state.installmentsStatus = 'failed';

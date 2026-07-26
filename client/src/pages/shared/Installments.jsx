@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { fetchInstallmentOrders, recordInstallmentPayment } from '../../slice/orderSlice';
 import Invoice from '../../components/Invoice';
+import { getErrorMessage } from '../../utils/apiError';
 
 const fmt = (n) => 'PKR ' + (n || 0).toLocaleString();
 const fmtDate = (d) => new Date(d).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -24,7 +25,7 @@ const statusBadge = (status) => {
 const Installments = () => {
     const dispatch = useDispatch();
     const { role, branch } = useSelector((state) => state.auth);
-    const { installments, installmentsStatus } = useSelector((state) => state.orders);
+    const { installments, installmentsStatus, error } = useSelector((state) => state.orders);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [branchFilter, setBranchFilter] = useState('all');
@@ -40,6 +41,12 @@ const Installments = () => {
     useEffect(() => {
         dispatch(fetchInstallmentOrders());
     }, [dispatch, branch]);
+
+    useEffect(() => {
+        if (installmentsStatus === 'failed' && error) {
+            toast.error(getErrorMessage(error, 'Failed to load installments'));
+        }
+    }, [installmentsStatus, error]);
 
     const branches = useMemo(
         () => [...new Set(installments.map((o) => o.branch).filter(Boolean))],
@@ -110,7 +117,7 @@ const Installments = () => {
             setPaymentNote('');
             dispatch(fetchInstallmentOrders());
         } catch (error) {
-            toast.error(error || 'Failed to record payment');
+            toast.error(getErrorMessage(error, 'Failed to record payment'));
         } finally {
             setRecording(false);
         }

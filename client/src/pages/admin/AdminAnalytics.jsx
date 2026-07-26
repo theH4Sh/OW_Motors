@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar, Cell, PieChart, Pie, Legend
 } from 'recharts';
+import { getErrorMessage } from '../../utils/apiError';
 
 const AdminAnalytics = () => {
     const { token } = useSelector(state => state.auth);
@@ -48,9 +50,13 @@ const AdminAnalytics = () => {
         try {
             const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
             const json = await res.json();
-            if (res.ok) setData(json);
+            if (res.ok) {
+                setData(json);
+            } else {
+                toast.error(getErrorMessage(json, 'Failed to load analytics'));
+            }
         } catch (err) {
-            console.error('Admin analytics error:', err);
+            toast.error(getErrorMessage(err, 'Failed to load analytics'));
         } finally {
             setLoading(false);
         }

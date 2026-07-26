@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrdersByBranch } from '../../slice/orderSlice';
 import Invoice from '../../components/Invoice';
 import OrderDateFilter from '../../components/OrderDateFilter';
+import toast from 'react-hot-toast';
 import { orderMatchesSearch } from '../../utils/orderSearch';
 import { getAvailableYears, orderMatchesDatePeriod } from '../../utils/orderDateFilter';
+import { getErrorMessage } from '../../utils/apiError';
 
 const OrderHistory = () => {
     const dispatch = useDispatch();
-    const { orders, status } = useSelector(state => state.orders);
+    const { orders, status, error } = useSelector(state => state.orders);
     const { branch } = useSelector(state => state.auth);
 
     const now = new Date();
@@ -23,6 +25,12 @@ const OrderHistory = () => {
             dispatch(fetchOrdersByBranch(branch));
         }
     }, [dispatch, branch]);
+
+    useEffect(() => {
+        if (status === 'failed' && error) {
+            toast.error(getErrorMessage(error, 'Failed to load orders'));
+        }
+    }, [status, error]);
 
     const availableYears = useMemo(() => getAvailableYears(orders), [orders]);
 

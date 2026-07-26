@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils/apiError';
 import { useSelector } from 'react-redux';
 
 const Analytics = () => {
@@ -57,9 +59,13 @@ const Analytics = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const json = await res.json();
-            if (res.ok) setData(json);
+            if (res.ok) {
+                setData(json);
+            } else {
+                toast.error(getErrorMessage(json, 'Failed to load analytics'));
+            }
         } catch (err) {
-            console.error('Analytics fetch error:', err);
+            toast.error(getErrorMessage(err, 'Failed to load analytics'));
         } finally {
             setLoading(false);
         }

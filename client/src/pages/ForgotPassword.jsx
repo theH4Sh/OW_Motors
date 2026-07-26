@@ -1,17 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '../utils/apiError';
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage('');
-        setError('');
 
         try {
             const API_URL = import.meta.env.VITE_API || 'http://localhost:8000/api/';
@@ -22,10 +20,11 @@ export default function ForgotPassword() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Request failed');
-            setMessage(data.message);
+            if (!res.ok) throw new Error(getErrorMessage(data, 'Request failed'));
+
+            toast.success(data.message || 'Password reset link sent');
         } catch (err) {
-            setError(err.message);
+            toast.error(getErrorMessage(err, 'Failed to send reset link'));
         } finally {
             setLoading(false);
         }
@@ -56,9 +55,6 @@ export default function ForgotPassword() {
                     <button type="submit" className="btn btn-primary w-full" disabled={loading}>
                         {loading ? 'Sending...' : 'Send reset link'}
                     </button>
-
-                    {message && <p className="auth-feedback auth-feedback-success">{message}</p>}
-                    {error && <p className="auth-feedback auth-feedback-error">{error}</p>}
                 </form>
 
                 <p className="auth-back-link">

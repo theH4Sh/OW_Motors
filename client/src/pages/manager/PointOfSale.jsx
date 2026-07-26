@@ -4,6 +4,7 @@ import { fetchProducts } from '../../slice/inventorySlice';
 import { createOrder } from '../../slice/orderSlice';
 import toast from 'react-hot-toast';
 import Invoice from '../../components/Invoice';
+import { getErrorMessage } from '../../utils/apiError';
 
 const CATEGORIES = [
     { key: 'all', label: 'All' },
@@ -149,7 +150,7 @@ const PointOfSale = () => {
             resetCheckoutForm();
             dispatch(fetchProducts());
         } catch (error) {
-            toast.error(error || 'Checkout failed');
+            toast.error(getErrorMessage(error, 'Checkout failed'));
         } finally {
             setProcessing(false);
         }

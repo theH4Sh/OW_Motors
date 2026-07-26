@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { getErrorMessage } from '../utils/apiError';
 
 const API_URL = 'http://localhost:8000/api';
 
@@ -10,15 +11,15 @@ export const fetchProducts = createAsyncThunk(
             let query = '?';
             if (category) query += `category=${category}&`;
             if (branch) query += `branch=${branch}`;
-            
+
             const response = await fetch(`${API_URL}/product${query}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` }
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Failed to fetch');
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to fetch products'));
             return data;
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to fetch products'));
         }
     }
 );
@@ -30,14 +31,14 @@ export const addProduct = createAsyncThunk(
             const { token } = getState().auth;
             const response = await fetch(`${API_URL}/product`, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData // sending FormData directly
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to add');
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to add product'));
             return data;
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to add product'));
         }
     }
 );
@@ -49,14 +50,14 @@ export const updateProduct = createAsyncThunk(
             const { token } = getState().auth;
             const response = await fetch(`${API_URL}/product/${id}`, {
                 method: 'PUT',
-                headers: { 'Authorization': `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}` },
                 body: formData,
             });
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || data.error || 'Failed to update');
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to update product'));
             return data;
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to update product'));
         }
     }
 );
@@ -68,13 +69,13 @@ export const deleteProduct = createAsyncThunk(
             const { token } = getState().auth;
             const response = await fetch(`${API_URL}/product/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` }
             });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to delete');
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(getErrorMessage(data, 'Failed to delete product'));
             return id;
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(getErrorMessage(error, 'Failed to delete product'));
         }
     }
 );
@@ -89,10 +90,14 @@ const inventorySlice = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(fetchProducts.pending, (state) => { state.status = 'loading'; })
+            .addCase(fetchProducts.pending, (state) => {
+                state.status = 'loading';
+                state.error = null;
+            })
             .addCase(fetchProducts.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.products = action.payload;
+                state.error = null;
             })
             .addCase(fetchProducts.rejected, (state, action) => {
                 state.status = 'failed';

@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
 import Invoice from '../../components/Invoice';
 import OrderDateFilter from '../../components/OrderDateFilter';
 import { orderMatchesSearch } from '../../utils/orderSearch';
 import { getAvailableYears, orderMatchesDatePeriod } from '../../utils/orderDateFilter';
+import { getErrorMessage } from '../../utils/apiError';
 
 const AdminOrders = () => {
     const { token } = useSelector(state => state.auth);
@@ -26,9 +28,13 @@ const AdminOrders = () => {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
-                if (res.ok && Array.isArray(data)) setOrders(data);
+                if (res.ok && Array.isArray(data)) {
+                    setOrders(data);
+                } else {
+                    toast.error(getErrorMessage(data, 'Failed to load orders'));
+                }
             } catch (err) {
-                console.error('Failed to fetch orders:', err);
+                toast.error(getErrorMessage(err, 'Failed to load orders'));
             } finally {
                 setLoading(false);
             }

@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts, deleteProduct } from '../../slice/inventorySlice';
 import ProductFormModal from '../../components/ProductFormModal';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils/apiError';
 
 const InventoryManager = () => {
     const dispatch = useDispatch();
-    const { products, status } = useSelector(state => state.inventory);
+    const { products, status, error } = useSelector(state => state.inventory);
     const { role, branch } = useSelector(state => state.auth);
 
     const [filter, setFilter] = useState('all');
@@ -20,6 +21,12 @@ const InventoryManager = () => {
     useEffect(() => {
         dispatch(fetchProducts());
     }, [dispatch]);
+
+    useEffect(() => {
+        if (status === 'failed' && error) {
+            toast.error(getErrorMessage(error, 'Failed to load inventory'));
+        }
+    }, [status, error]);
 
     const handleFilterChange = (category) => {
         setFilter(category);
@@ -48,7 +55,7 @@ const InventoryManager = () => {
             await dispatch(deleteProduct(id)).unwrap();
             toast.success('Product deleted');
         } catch (error) {
-            toast.error(error || 'Delete failed');
+            toast.error(getErrorMessage(error, 'Delete failed'));
         }
     };
 

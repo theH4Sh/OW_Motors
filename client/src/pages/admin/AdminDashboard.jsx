@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from '../../utils/apiError';
 
 const AdminDashboard = () => {
     const { token, username } = useSelector(state => state.auth);
@@ -25,10 +27,15 @@ const AdminDashboard = () => {
                 const orderData = await orderRes.json();
 
                 if (mgrRes.ok) setManagers(mgrData);
+                else toast.error(getErrorMessage(mgrData, 'Failed to load managers'));
+
                 if (prodRes.ok) setProducts(prodData);
+                else toast.error(getErrorMessage(prodData, 'Failed to load products'));
+
                 if (orderRes.ok && Array.isArray(orderData)) setOrders(orderData);
+                else if (!orderRes.ok) toast.error(getErrorMessage(orderData, 'Failed to load orders'));
             } catch (err) {
-                console.error('Admin dashboard fetch error:', err);
+                toast.error(getErrorMessage(err, 'Failed to load dashboard'));
             } finally {
                 setLoading(false);
             }

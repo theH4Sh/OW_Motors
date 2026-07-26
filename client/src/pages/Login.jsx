@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import { login } from '../slice/authSlice.js';
+import { getErrorMessage } from '../utils/apiError.js';
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -32,7 +33,7 @@ export default function Login() {
             .then((res) => {
                 if (!res.ok) {
                     return res.json().then((data) => {
-                        throw new Error(data.message || data.error || data.detail || 'Login failed');
+                        throw new Error(getErrorMessage(data, 'Login failed'));
                     });
                 }
                 return res.json();
@@ -50,7 +51,7 @@ export default function Login() {
                 navigate('/');
             })
             .catch((err) => {
-                toast.error(err.message || 'Login failed');
+                toast.error(getErrorMessage(err, 'Login failed'));
             })
             .finally(() => {
                 setLoading(false);
