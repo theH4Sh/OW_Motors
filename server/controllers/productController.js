@@ -227,7 +227,7 @@ const addProduct = async (req, res, next) => {
         const { name, purchasePrice, sellingPrice, description, quantity, category, branch } = req.body
 
         if (!req.file) {
-            return res.status(400).json({ error: 'Product Image Required' })
+            return res.status(400).json({ message: 'Product image is required' })
         }
 
         const assignBranch = req.user.role === 'manager' ? req.user.branch : branch;

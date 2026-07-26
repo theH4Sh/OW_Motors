@@ -27,13 +27,7 @@ app.use("/api/analytics", require("./routes/analyticsRoutes"))
 app.use("/api", require("./routes/productRoutes"))
 
 //Error Handling
-app.use((err, req, res, next) => {
-    console.log(err.stack)
-    res.status(err.status || 500).json({
-        success: false,
-        message: err.message || 'Internal Server Error'
-    })
-})
+app.use(require('./middleware/errorHandler'))
 
 const port = 8000
 app.listen(port, () => {

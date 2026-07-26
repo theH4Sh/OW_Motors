@@ -1,4 +1,5 @@
 const multer = require('multer')
+const AppError = require('../utils/AppError')
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -16,7 +17,7 @@ const fileFilter = (req, file, cb) => {
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true)
     } else {
-        cb(new Error('Only PNG, JPG, and WebP images are allowed'))
+        cb(new AppError('Only PNG, JPG, and WebP images are allowed', 400))
     }
 }
 

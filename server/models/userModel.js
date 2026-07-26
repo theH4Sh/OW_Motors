@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const validator = require('validator')
+const AppError = require('../utils/AppError')
 
 const Schema = mongoose.Schema
 
@@ -34,35 +35,32 @@ const userSchema = new Schema({
     }
 }, { timestamps: true })
 
-// User SignUp
-
 userSchema.statics.signup = async function (username, email, password, branch) {
-    // validation
     if (!username || !email || !password || !branch) {
-        throw Error('All fields must be filled')
+        throw new AppError('All fields must be filled', 400)
     }
 
     if (username.length < 3) {
-        throw Error('Username must be at least 3 character long')
+        throw new AppError('Username must be at least 3 characters long', 400)
     }
 
     if (!validator.isEmail(email)) {
-        throw Error('Invalid Email')
+        throw new AppError('Invalid email', 400)
     }
 
     if (!validator.isStrongPassword(password)) {
-        throw Error('Password not strong enough')
+        throw new AppError('Password not strong enough', 400)
     }
 
     const existingUser = await this.findOne({ $or: [{ email }, { username }] })
 
     if (existingUser) {
-        if (existingUser.email == email) {
-            throw Error("Email already in use")
+        if (existingUser.email === email) {
+            throw new AppError('Email already in use', 409)
         }
 
-        if (existingUser.username == username) {
-            throw Error("Username Already Taken")
+        if (existingUser.username === username) {
+            throw new AppError('Username already taken', 409)
         }
     }
 
@@ -76,7 +74,7 @@ userSchema.statics.signup = async function (username, email, password, branch) {
 
 userSchema.statics.login = async function (identifier, password) {
     if (!identifier || !password) {
-        throw Error("All fields must be filled")
+        throw new AppError('All fields must be filled', 400)
     }
 
     const user = await this.findOne({
@@ -84,12 +82,12 @@ userSchema.statics.login = async function (identifier, password) {
     })
 
     if (!user) {
-        throw Error('Invalid Username or email')
+        throw new AppError('Invalid username or email', 401)
     }
 
     const match = await bcrypt.compare(password, user.password)
     if (!match) {
-        throw Error('Incorrect Password')
+        throw new AppError('Incorrect password', 401)
     }
 
     return user
