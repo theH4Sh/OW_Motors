@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import Invoice from '../../components/Invoice';
+import OrderDateFilter from '../../components/OrderDateFilter';
 import { orderMatchesSearch } from '../../utils/orderSearch';
+import { getAvailableYears, orderMatchesDatePeriod } from '../../utils/orderDateFilter';
 
 const AdminOrders = () => {
     const { token } = useSelector(state => state.auth);
@@ -10,6 +12,10 @@ const AdminOrders = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [branchFilter, setBranchFilter] = useState('all');
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const now = new Date();
+    const [datePeriod, setDatePeriod] = useState('all');
+    const [filterMonth, setFilterMonth] = useState('any');
+    const [filterYear, setFilterYear] = useState(now.getFullYear());
 
     const API = import.meta.env.VITE_API || 'http://localhost:8000/api/';
 
@@ -32,17 +38,40 @@ const AdminOrders = () => {
 
     // Get unique branches
     const branches = [...new Set(orders.map(o => o.branch))];
+    const availableYears = useMemo(() => getAvailableYears(orders), [orders]);
 
     const filteredOrders = useMemo(() => (
         orders.filter(o => {
             const matchBranch = branchFilter === 'all' || o.branch === branchFilter;
+            const matchDate = orderMatchesDatePeriod(o, {
+                period: datePeriod,
+                month: filterMonth,
+                year: filterYear,
+            });
             const matchSearch = orderMatchesSearch(o, searchQuery, {
                 includeProcessedBy: true,
                 includeBranch: true,
             });
-            return matchBranch && matchSearch;
+            return matchBranch && matchDate && matchSearch;
         })
-    ), [orders, branchFilter, searchQuery]);
+    ), [orders, branchFilter, searchQuery, datePeriod, filterMonth, filterYear]);
+
+    const handlePeriodChange = (period) => {
+        setDatePeriod(period);
+        if (period === 'custom') {
+            const currentYear = new Date().getFullYear();
+            setFilterYear(availableYears.includes(currentYear) ? currentYear : availableYears[0]);
+            setFilterMonth('any');
+        }
+    };
+
+    const hasActiveFilters = branchFilter !== 'all' || datePeriod !== 'all' || searchQuery.trim().length > 0;
+
+    const clearFilters = () => {
+        setBranchFilter('all');
+        setDatePeriod('all');
+        setSearchQuery('');
+    };
 
     const totalRevenue = filteredOrders.reduce((s, o) => s + o.totalAmount, 0);
     const fmt = (n) => 'PKR ' + (n || 0).toLocaleString();
@@ -56,35 +85,53 @@ const AdminOrders = () => {
                 </div>
             </div>
 
-            <div className="filter-toolbar">
-                <div className="filter-buttons">
-                    <button
-                        onClick={() => setBranchFilter('all')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${branchFilter === 'all'
-                            ? 'bg-[#0B7C56] text-white shadow-md'
-                            : 'bg-white text-gray-600 border border-gray-200 hover:border-[#0B7C56]'}`}
-                    >All Branches</button>
-                    {branches.map(b => (
+            <div className="space-y-3 mb-5">
+                <div className="filter-toolbar" style={{ marginBottom: 0 }}>
+                    <div className="filter-buttons">
                         <button
-                            key={b}
-                            onClick={() => setBranchFilter(b)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${branchFilter === b
-                                ? 'bg-[#0B7C56] text-white shadow-md'
-                                : 'bg-white text-gray-600 border border-gray-200 hover:border-[#0B7C56]'}`}
-                        >{b}</button>
-                    ))}
+                            onClick={() => setBranchFilter('all')}
+                            className={`btn ${branchFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+                        >All Branches</button>
+                        {branches.map(b => (
+                            <button
+                                key={b}
+                                onClick={() => setBranchFilter(b)}
+                                className={`btn ${branchFilter === b ? 'btn-primary' : 'btn-secondary'}`}
+                            >{b}</button>
+                        ))}
+                    </div>
+
+                    <div className="search-field">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input
+                            type="text"
+                            placeholder="Search by name, date, amount, product, processed by..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm text-sm focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
+                        />
+                    </div>
                 </div>
 
-                <div className="search-field">
-                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input
-                        type="text"
-                        placeholder="Search by name, date, amount, product, processed by..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm text-sm focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
-                    />
-                </div>
+                <OrderDateFilter
+                    period={datePeriod}
+                    month={filterMonth}
+                    year={filterYear}
+                    years={availableYears}
+                    onPeriodChange={handlePeriodChange}
+                    onMonthChange={setFilterMonth}
+                    onYearChange={setFilterYear}
+                />
+
+                {hasActiveFilters && (
+                    <button
+                        type="button"
+                        onClick={clearFilters}
+                        className="text-sm font-semibold text-[#0B7C56] hover:text-[#095c40]"
+                    >
+                        Clear all filters
+                    </button>
+                )}
             </div>
 
             {loading ? (
@@ -97,7 +144,11 @@ const AdminOrders = () => {
                     <div className="mobile-list-wrap space-y-3 mb-4">
                         {filteredOrders.length === 0 ? (
                             <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
-                                {searchQuery ? `No orders matching "${searchQuery}"` : 'No orders found.'}
+                                {searchQuery
+                                    ? `No orders matching "${searchQuery}"`
+                                    : datePeriod !== 'all'
+                                        ? 'No orders found for the selected period.'
+                                        : 'No orders found.'}
                             </div>
                         ) : (
                             filteredOrders.map(order => (
@@ -150,7 +201,11 @@ const AdminOrders = () => {
                                 {filteredOrders.length === 0 ? (
                                     <tr>
                                         <td colSpan="8" className="text-center py-12 text-gray-400">
-                                            {searchQuery ? `No orders matching "${searchQuery}"` : 'No orders found.'}
+                                            {searchQuery
+                                                ? `No orders matching "${searchQuery}"`
+                                                : datePeriod !== 'all'
+                                                    ? 'No orders found for the selected period.'
+                                                    : 'No orders found.'}
                                         </td>
                                     </tr>
                                 ) : (

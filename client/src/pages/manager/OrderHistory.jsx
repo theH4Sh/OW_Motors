@@ -2,15 +2,21 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrdersByBranch } from '../../slice/orderSlice';
 import Invoice from '../../components/Invoice';
+import OrderDateFilter from '../../components/OrderDateFilter';
 import { orderMatchesSearch } from '../../utils/orderSearch';
+import { getAvailableYears, orderMatchesDatePeriod } from '../../utils/orderDateFilter';
 
 const OrderHistory = () => {
     const dispatch = useDispatch();
     const { orders, status } = useSelector(state => state.orders);
     const { branch } = useSelector(state => state.auth);
 
+    const now = new Date();
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [datePeriod, setDatePeriod] = useState('all');
+    const [filterMonth, setFilterMonth] = useState('any');
+    const [filterYear, setFilterYear] = useState(now.getFullYear());
 
     useEffect(() => {
         if (branch) {
@@ -18,10 +24,34 @@ const OrderHistory = () => {
         }
     }, [dispatch, branch]);
 
+    const availableYears = useMemo(() => getAvailableYears(orders), [orders]);
+
     const filteredOrders = useMemo(
-        () => orders.filter(order => orderMatchesSearch(order, searchQuery)),
-        [orders, searchQuery]
+        () => orders.filter(order => (
+            orderMatchesDatePeriod(order, {
+                period: datePeriod,
+                month: filterMonth,
+                year: filterYear,
+            }) && orderMatchesSearch(order, searchQuery)
+        )),
+        [orders, searchQuery, datePeriod, filterMonth, filterYear]
     );
+
+    const handlePeriodChange = (period) => {
+        setDatePeriod(period);
+        if (period === 'custom') {
+            const currentYear = new Date().getFullYear();
+            setFilterYear(availableYears.includes(currentYear) ? currentYear : availableYears[0]);
+            setFilterMonth('any');
+        }
+    };
+
+    const hasActiveFilters = datePeriod !== 'all' || searchQuery.trim().length > 0;
+
+    const clearFilters = () => {
+        setDatePeriod('all');
+        setSearchQuery('');
+    };
 
     const isLoading = status === 'loading';
     const isEmpty = !isLoading && orders.length === 0;
@@ -34,10 +64,16 @@ const OrderHistory = () => {
             </div>
 
             {!isLoading && !isEmpty && (
-                <div className="filter-toolbar">
-                    <p className="text-sm text-gray-500">
-                        {filteredOrders.length} of {orders.length} orders
-                    </p>
+                <div className="filter-toolbar" style={{ alignItems: 'flex-start' }}>
+                    <OrderDateFilter
+                        period={datePeriod}
+                        month={filterMonth}
+                        year={filterYear}
+                        years={availableYears}
+                        onPeriodChange={handlePeriodChange}
+                        onMonthChange={setFilterMonth}
+                        onYearChange={setFilterYear}
+                    />
                     <div className="search-field">
                         <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -53,6 +89,23 @@ const OrderHistory = () => {
                 </div>
             )}
 
+            {!isLoading && !isEmpty && (
+                <div className="flex items-center gap-3 mb-4 -mt-2">
+                    <p className="text-sm text-gray-500">
+                        {filteredOrders.length} of {orders.length} orders
+                    </p>
+                    {hasActiveFilters && (
+                        <button
+                            type="button"
+                            onClick={clearFilters}
+                            className="text-sm font-semibold text-[#0B7C56] hover:text-[#095c40]"
+                        >
+                            Clear filters
+                        </button>
+                    )}
+                </div>
+            )}
+
             {isLoading ? (
                 <p className="text-gray-500">Loading historical orders...</p>
             ) : isEmpty ? (
@@ -61,7 +114,9 @@ const OrderHistory = () => {
                 </div>
             ) : noMatches ? (
                 <div className="text-center py-12 text-gray-500 bg-white rounded-xl border border-dashed border-gray-200">
-                    No orders matching "{searchQuery}"
+                    {searchQuery
+                        ? `No orders matching "${searchQuery}"`
+                        : 'No orders found for the selected period.'}
                 </div>
             ) : (
                 <>

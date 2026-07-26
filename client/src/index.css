@@ -918,6 +918,114 @@ a:hover {
   flex-wrap: wrap;
 }
 
+.date-picker-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.date-picker-trigger {
+  gap: 8px;
+}
+
+.date-picker-caret {
+  opacity: 0.6;
+  margin-left: -2px;
+}
+
+.date-picker-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 20;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.18);
+  padding: 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  animation: fadeSlideDown 0.15s ease-out;
+}
+
+.date-picker-popover::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 18px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-left: 1px solid #e2e8f0;
+  border-top: 1px solid #e2e8f0;
+  transform: rotate(45deg);
+}
+
+.date-picker-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.date-picker-field label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.date-picker-field select {
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+  min-width: 8.5rem;
+  transition: border-color 0.15s ease;
+}
+
+.date-picker-field select:focus {
+  border-color: var(--primary);
+}
+
+.date-picker-done {
+  padding: 8px 16px !important;
+  white-space: nowrap;
+}
+
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .date-picker-popover {
+    left: auto;
+    right: 0;
+    flex-wrap: wrap;
+  }
+
+  .date-picker-popover::before {
+    left: auto;
+    right: 18px;
+  }
+
+  .date-picker-done {
+    width: 100%;
+  }
+}
+
 .search-field {
   position: relative;
   width: 100%;
