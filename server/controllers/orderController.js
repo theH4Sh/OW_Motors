@@ -4,7 +4,7 @@ const Product = require('../models/Product')
 
 const createOrder = async (req, res, next) => {
     try {
-        const { items, name, phone, address } = req.body
+        const { items, name, fatherName, cnic, phone, address } = req.body
         // const userId = req.user._id
         let branch = null
 
@@ -15,6 +15,21 @@ const createOrder = async (req, res, next) => {
         if (!name) {
             return res.status(400).json({ message: 'Name is required' })
         }
+
+        if (!fatherName) {
+            return res.status(400).json({ message: "Father's name is required" })
+        }
+
+        if (!cnic) {
+            return res.status(400).json({ message: 'CNIC is required' })
+        }
+
+        const cnicDigits = String(cnic).replace(/\D/g, '')
+        if (cnicDigits.length !== 13) {
+            return res.status(400).json({ message: 'CNIC must be 13 digits' })
+        }
+
+        const formattedCnic = `${cnicDigits.slice(0, 5)}-${cnicDigits.slice(5, 12)}-${cnicDigits.slice(12)}`
 
         if (!phone) {
             return res.status(400).json({ message: 'Phone number is required' })
@@ -67,6 +82,8 @@ const createOrder = async (req, res, next) => {
             items: orderItems,
             totalAmount,
             name,
+            fatherName: fatherName.trim(),
+            cnic: formattedCnic,
             phone,
             address,
             branch

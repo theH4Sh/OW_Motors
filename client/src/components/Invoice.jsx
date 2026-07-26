@@ -38,11 +38,17 @@ const Invoice = ({ order, onClose }) => {
                         </div>
                     </div>
 
-                    <div className="mb-8 grid grid-cols-2 gap-8">
+                    <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                         <div>
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Billed To</h3>
                             <p className="font-semibold text-lg">{order.name}</p>
-                            <p className="text-gray-600">{order.address}</p>
+                            {order.fatherName && (
+                                <p className="text-gray-600">S/O {order.fatherName}</p>
+                            )}
+                            {order.cnic && (
+                                <p className="text-gray-600">CNIC: {order.cnic}</p>
+                            )}
+                            <p className="text-gray-600 mt-2">{order.address}</p>
                             <p className="text-gray-600">Tel: {order.phone}</p>
                         </div>
                     </div>

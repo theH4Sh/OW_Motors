@@ -17,7 +17,7 @@ const PointOfSale = () => {
     const { branch } = useSelector(state => state.auth);
 
     const [cart, setCart] = useState([]);
-    const [customer, setCustomer] = useState({ name: '', phone: '', address: '' });
+    const [customer, setCustomer] = useState({ name: '', fatherName: '', cnic: '', phone: '', address: '' });
     const [processing, setProcessing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
@@ -75,10 +75,17 @@ const PointOfSale = () => {
         e.preventDefault();
         if (cart.length === 0) return toast.error('Cart is empty!');
 
+        const cnicDigits = customer.cnic.replace(/\D/g, '');
+        if (cnicDigits.length !== 13) {
+            return toast.error('Enter a valid 13-digit CNIC');
+        }
+
         setProcessing(true);
         const orderPayload = {
             items: cart.map(item => ({ product: item._id, quantity: item.qty })),
             name: customer.name,
+            fatherName: customer.fatherName,
+            cnic: customer.cnic,
             phone: customer.phone,
             address: customer.address,
         };
@@ -96,7 +103,7 @@ const PointOfSale = () => {
             setCompletedOrder(enrichedOrder);
             toast.success('Order processed successfully!');
             setCart([]);
-            setCustomer({ name: '', phone: '', address: '' });
+            setCustomer({ name: '', fatherName: '', cnic: '', phone: '', address: '' });
             dispatch(fetchProducts());
         } catch (error) {
             toast.error(error || 'Checkout failed');
@@ -386,6 +393,34 @@ const PointOfSale = () => {
                                             className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
                                             value={customer.name}
                                             onChange={e => setCustomer({ ...customer, name: e.target.value })}
+                                        />
+                                        <input
+                                            required
+                                            type="text"
+                                            placeholder="Father's name"
+                                            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
+                                            value={customer.fatherName}
+                                            onChange={e => setCustomer({ ...customer, fatherName: e.target.value })}
+                                        />
+                                        <input
+                                            required
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="CNIC (xxxxx-xxxxxxx-x)"
+                                            maxLength={15}
+                                            className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
+                                            value={customer.cnic}
+                                            onChange={e => {
+                                                const digits = e.target.value.replace(/\D/g, '').slice(0, 13);
+                                                let formatted = digits;
+                                                if (digits.length > 5) {
+                                                    formatted = `${digits.slice(0, 5)}-${digits.slice(5)}`;
+                                                }
+                                                if (digits.length > 12) {
+                                                    formatted = `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12)}`;
+                                                }
+                                                setCustomer({ ...customer, cnic: formatted });
+                                            }}
                                         />
                                         <input
                                             required
