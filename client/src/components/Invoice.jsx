@@ -8,13 +8,17 @@ const Invoice = ({ order, onClose }) => {
     };
 
     const formatMoney = (amount) =>
-        `PKR ${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+        `PKR ${Number(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
+    const paymentType = order.paymentType || 'full';
+    const amountPaid = order.amountPaid ?? (paymentType === 'full' ? order.totalAmount : 0);
+    const remaining = Math.max(0, (order.totalAmount || 0) - amountPaid);
+    const isInstallment = paymentType === 'installment';
 
     return (
         <div className="invoice-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-[3000] flex items-center justify-center p-4">
             <div className="invoice-sheet bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
 
-                {/* Header Actions - Hidden in Print Mode */}
                 <div className="print:hidden flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-4 border-b border-gray-100 bg-gray-50">
                     <h2 className="text-lg font-semibold text-gray-700">Order Successfully Processed</h2>
                     <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -27,7 +31,6 @@ const Invoice = ({ order, onClose }) => {
                     </div>
                 </div>
 
-                {/* Printable Invoice Body */}
                 <div className="invoice-body p-4 sm:p-8 overflow-y-auto text-gray-800 bg-white">
                     <div className="invoice-header border-b-2 border-slate-200 pb-6 mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
                         <div>
@@ -44,6 +47,11 @@ const Invoice = ({ order, onClose }) => {
                             <p className="text-sm text-gray-500">
                                 Invoice #{order._id.slice(-6).toUpperCase()}
                             </p>
+                            {isInstallment && (
+                                <p className="text-sm font-semibold text-amber-600 mt-1 capitalize">
+                                    {order.installmentType} installment
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -86,9 +94,9 @@ const Invoice = ({ order, onClose }) => {
                                 {order.items.map((item, index) => (
                                     <tr key={index} className="border-b border-gray-100 last:border-0">
                                         <td className="py-4 pr-4">
-                                            <p className="font-semibold">{item.product.name}</p>
+                                            <p className="font-semibold">{item.product?.name || 'Item'}</p>
                                             <p className="text-sm text-gray-500 capitalize mt-0.5">
-                                                {item.product.category?.replace('_', ' ')}
+                                                {item.product?.category?.replace('_', ' ')}
                                             </p>
                                         </td>
                                         <td className="py-4 text-center font-medium">{item.quantity}</td>
@@ -110,14 +118,60 @@ const Invoice = ({ order, onClose }) => {
                                     {formatMoney(order.totalAmount)}
                                 </span>
                             </div>
-                            <div className="flex justify-between gap-8 pt-3 border-t border-gray-200">
-                                <span className="text-gray-500 font-medium">Total Due</span>
-                                <span className="font-bold text-[#0B7C56] text-xl whitespace-nowrap">
-                                    {formatMoney(order.totalAmount)}
-                                </span>
-                            </div>
+                            {isInstallment && (
+                                <>
+                                    <div className="flex justify-between gap-8 text-gray-500 font-medium">
+                                        <span>Amount Paid</span>
+                                        <span className="text-gray-800 font-semibold whitespace-nowrap">
+                                            {formatMoney(amountPaid)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between gap-8 pt-3 border-t border-gray-200">
+                                        <span className="text-gray-500 font-medium">Balance Due</span>
+                                        <span className="font-bold text-amber-600 text-xl whitespace-nowrap">
+                                            {formatMoney(remaining)}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
+                            {!isInstallment && (
+                                <div className="flex justify-between gap-8 pt-3 border-t border-gray-200">
+                                    <span className="text-gray-500 font-medium">Total Due</span>
+                                    <span className="font-bold text-[#0B7C56] text-xl whitespace-nowrap">
+                                        {formatMoney(order.totalAmount)}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     </div>
+
+                    {isInstallment && order.installmentType === 'fixed' && order.installments?.length > 0 && (
+                        <div className="mt-10">
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                Installment Schedule
+                            </h3>
+                            <table className="invoice-table w-full text-left text-sm">
+                                <thead>
+                                    <tr className="border-b border-slate-200">
+                                        <th className="py-2 font-semibold text-gray-600">#</th>
+                                        <th className="py-2 font-semibold text-gray-600">Due Date</th>
+                                        <th className="py-2 font-semibold text-gray-600 text-right">Amount</th>
+                                        <th className="py-2 font-semibold text-gray-600 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {order.installments.map((inst, idx) => (
+                                        <tr key={inst._id || idx} className="border-b border-gray-100">
+                                            <td className="py-2.5">{idx + 1}</td>
+                                            <td className="py-2.5">{new Date(inst.dueDate).toLocaleDateString()}</td>
+                                            <td className="py-2.5 text-right whitespace-nowrap">{formatMoney(inst.amountDue)}</td>
+                                            <td className="py-2.5 text-right capitalize">{inst.status}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
 
                     <div className="invoice-footer mt-16 pt-6 border-t border-gray-100 text-center text-sm text-gray-400">
                         <p>Thank you for choosing OW Motors! We appreciate your business.</p>

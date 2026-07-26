@@ -15,6 +15,9 @@ const navIcons = {
     orders: (
         <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
     ),
+    installments: (
+        <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+    ),
     analytics: (
         <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
     ),
@@ -83,6 +86,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                         <NavLink to="/admin/managers">{navIcons.managers} Branch Managers</NavLink>
                         <NavLink to="/admin/inventory">{navIcons.inventory} Global Inventory</NavLink>
                         <NavLink to="/admin/orders">{navIcons.orders} All Orders</NavLink>
+                        <NavLink to="/admin/installments">{navIcons.installments} Installments</NavLink>
                         <NavLink to="/admin/analytics">{navIcons.analytics} Analytics</NavLink>
                     </>
                 )}
@@ -93,6 +97,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                         <NavLink to="/manager/inventory">{navIcons.inventory} Inventory</NavLink>
                         <NavLink to="/manager/pos">{navIcons.pos} Point of Sale</NavLink>
                         <NavLink to="/manager/orders">{navIcons.orders} Order History</NavLink>
+                        <NavLink to="/manager/installments">{navIcons.installments} Installments</NavLink>
                         <NavLink to="/manager/analytics">{navIcons.analytics} Analytics</NavLink>
                     </>
                 )}

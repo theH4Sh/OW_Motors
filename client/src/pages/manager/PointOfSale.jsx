@@ -18,6 +18,10 @@ const PointOfSale = () => {
 
     const [cart, setCart] = useState([]);
     const [customer, setCustomer] = useState({ name: '', fatherName: '', cnic: '', phone: '', address: '' });
+    const [paymentType, setPaymentType] = useState('full');
+    const [installmentType, setInstallmentType] = useState('fixed');
+    const [downPayment, setDownPayment] = useState('');
+    const [installmentCount, setInstallmentCount] = useState(6);
     const [processing, setProcessing] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
@@ -71,6 +75,22 @@ const PointOfSale = () => {
         toast.success('Cart cleared');
     };
 
+    const cartTotal = cart.reduce((sum, item) => sum + item.sellingPrice * item.qty, 0);
+    const cartItemCount = cart.reduce((sum, item) => sum + item.qty, 0);
+    const downPaymentValue = Number(downPayment) || 0;
+    const remainingAfterDown = Math.max(0, cartTotal - downPaymentValue);
+    const monthlyAmount = installmentType === 'fixed' && installmentCount
+        ? Math.ceil((remainingAfterDown / installmentCount) * 100) / 100
+        : 0;
+
+    const resetCheckoutForm = () => {
+        setCustomer({ name: '', fatherName: '', cnic: '', phone: '', address: '' });
+        setPaymentType('full');
+        setInstallmentType('fixed');
+        setDownPayment('');
+        setInstallmentCount(6);
+    };
+
     const handleCheckout = async (e) => {
         e.preventDefault();
         if (cart.length === 0) return toast.error('Cart is empty!');
@@ -78,6 +98,15 @@ const PointOfSale = () => {
         const cnicDigits = customer.cnic.replace(/\D/g, '');
         if (cnicDigits.length !== 13) {
             return toast.error('Enter a valid 13-digit CNIC');
+        }
+
+        if (paymentType === 'installment') {
+            if (downPaymentValue <= 0) {
+                return toast.error('Enter a down payment greater than 0');
+            }
+            if (downPaymentValue >= cartTotal) {
+                return toast.error('Down payment must be less than the total — use Full Pay instead');
+            }
         }
 
         setProcessing(true);
@@ -88,6 +117,12 @@ const PointOfSale = () => {
             cnic: customer.cnic,
             phone: customer.phone,
             address: customer.address,
+            paymentType,
+            ...(paymentType === 'installment' ? {
+                installmentType,
+                downPayment: downPaymentValue,
+                ...(installmentType === 'fixed' ? { installmentCount } : {}),
+            } : {}),
         };
 
         try {
@@ -95,15 +130,23 @@ const PointOfSale = () => {
             const enrichedOrder = {
                 ...orderRes,
                 items: orderRes.items.map(orderItem => {
-                    const fullProd = products.find(p => p._id === orderItem.product);
+                    const productRef = orderItem.product;
+                    const productId = typeof productRef === 'object' ? productRef?._id : productRef;
+                    const fullProd = (typeof productRef === 'object' && productRef?.name)
+                        ? productRef
+                        : products.find(p => p._id === productId);
                     return { ...orderItem, product: fullProd };
                 }),
             };
 
             setCompletedOrder(enrichedOrder);
-            toast.success('Order processed successfully!');
+            toast.success(
+                paymentType === 'installment'
+                    ? 'Installment sale created successfully!'
+                    : 'Order processed successfully!'
+            );
             setCart([]);
-            setCustomer({ name: '', fatherName: '', cnic: '', phone: '', address: '' });
+            resetCheckoutForm();
             dispatch(fetchProducts());
         } catch (error) {
             toast.error(error || 'Checkout failed');
@@ -111,9 +154,6 @@ const PointOfSale = () => {
             setProcessing(false);
         }
     };
-
-    const cartTotal = cart.reduce((sum, item) => sum + item.sellingPrice * item.qty, 0);
-    const cartItemCount = cart.reduce((sum, item) => sum + item.qty, 0);
 
     const filteredProducts = products.filter(p => {
         const q = searchQuery.toLowerCase();
@@ -441,11 +481,116 @@ const PointOfSale = () => {
                                     </div>
                                 </div>
 
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Payment</p>
+                                    <div className="grid grid-cols-2 gap-2 mb-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentType('full')}
+                                            className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                                                paymentType === 'full'
+                                                    ? 'bg-[#0B7C56] text-white border-[#0B7C56]'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#0B7C56]'
+                                            }`}
+                                        >
+                                            Full Pay
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentType('installment')}
+                                            className={`py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                                                paymentType === 'installment'
+                                                    ? 'bg-[#0B7C56] text-white border-[#0B7C56]'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#0B7C56]'
+                                            }`}
+                                        >
+                                            Installment
+                                        </button>
+                                    </div>
+
+                                    {paymentType === 'installment' && (
+                                        <div className="space-y-2.5 mb-3">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setInstallmentType('fixed')}
+                                                    className={`py-2 rounded-xl text-xs font-semibold border transition-all ${
+                                                        installmentType === 'fixed'
+                                                            ? 'bg-emerald-50 text-[#0B7C56] border-emerald-200'
+                                                            : 'bg-white text-gray-500 border-gray-200'
+                                                    }`}
+                                                >
+                                                    Fixed Plan
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setInstallmentType('flexible')}
+                                                    className={`py-2 rounded-xl text-xs font-semibold border transition-all ${
+                                                        installmentType === 'flexible'
+                                                            ? 'bg-emerald-50 text-[#0B7C56] border-emerald-200'
+                                                            : 'bg-white text-gray-500 border-gray-200'
+                                                    }`}
+                                                >
+                                                    Flexible
+                                                </button>
+                                            </div>
+
+                                            <input
+                                                required
+                                                type="number"
+                                                min="1"
+                                                step="1"
+                                                placeholder="Down payment (PKR)"
+                                                className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
+                                                value={downPayment}
+                                                onChange={e => setDownPayment(e.target.value)}
+                                            />
+
+                                            {installmentType === 'fixed' && (
+                                                <select
+                                                    value={installmentCount}
+                                                    onChange={e => setInstallmentCount(Number(e.target.value))}
+                                                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
+                                                >
+                                                    <option value={3}>3 months</option>
+                                                    <option value={6}>6 months</option>
+                                                    <option value={9}>9 months</option>
+                                                    <option value={12}>12 months</option>
+                                                </select>
+                                            )}
+
+                                            {downPaymentValue > 0 && downPaymentValue < cartTotal && (
+                                                <div className="rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5 text-xs text-amber-800 space-y-1">
+                                                    <div className="flex justify-between">
+                                                        <span>Remaining</span>
+                                                        <span className="font-semibold">PKR {remainingAfterDown.toLocaleString()}</span>
+                                                    </div>
+                                                    {installmentType === 'fixed' && (
+                                                        <div className="flex justify-between">
+                                                            <span>~ Monthly</span>
+                                                            <span className="font-semibold">PKR {monthlyAmount.toLocaleString()}</span>
+                                                        </div>
+                                                    )}
+                                                    {installmentType === 'flexible' && (
+                                                        <p className="text-amber-700">Customer can pay the remaining balance anytime.</p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="rounded-xl bg-slate-50 border border-slate-100 p-4 space-y-2">
                                     <div className="flex justify-between text-sm text-gray-500">
                                         <span>Items ({cartItemCount})</span>
                                         <span>PKR {cartTotal.toLocaleString()}</span>
                                     </div>
+                                    {paymentType === 'installment' && downPaymentValue > 0 && (
+                                        <div className="flex justify-between text-sm text-gray-500">
+                                            <span>Due today</span>
+                                            <span className="font-semibold text-gray-700">PKR {downPaymentValue.toLocaleString()}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center pt-2 border-t border-slate-200">
                                         <span className="font-semibold text-gray-700">Total</span>
                                         <span className="text-2xl font-bold text-[#0B7C56]">
@@ -472,7 +617,7 @@ const PointOfSale = () => {
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            Checkout
+                                            {paymentType === 'installment' ? 'Create Installment Sale' : 'Checkout'}
                                         </>
                                     )}
                                 </button>

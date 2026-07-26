@@ -181,16 +181,23 @@ const AdminOrders = () => {
                     <div className="mobile-list-wrap space-y-3 mb-4">
                         {filteredOrders.map(order => (
                             <div key={order._id} className="mobile-card">
-                                <div className="flex justify-between items-start gap-3">
-                                    <div className="min-w-0">
-                                        <p className="font-semibold text-gray-900 truncate">{order.name}</p>
-                                        <p className="text-sm text-gray-500">{order.phone}</p>
+                                    <div className="flex justify-between items-start gap-3">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-gray-900 truncate">{order.name}</p>
+                                            <p className="text-sm text-gray-500">{order.phone}</p>
+                                            {order.paymentType === 'installment' && (
+                                                <span className={`badge mt-2 ${order.paymentStatus === 'paid' ? 'badge-success' : order.paymentStatus === 'overdue' ? '' : 'badge-warning'}`}
+                                                    style={order.paymentStatus === 'overdue' ? { background: 'rgba(239, 68, 68, 0.12)', color: 'var(--danger)' } : undefined}
+                                                >
+                                                    {order.paymentStatus === 'paid' ? 'Paid' : order.paymentStatus === 'overdue' ? 'Overdue' : 'Installment'}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                            <p className="font-bold text-[#0B7C56]">{fmt(order.totalAmount)}</p>
+                                            <p className="text-xs text-gray-400 mt-0.5">{fmtDate(order.createdAt)}</p>
+                                        </div>
                                     </div>
-                                    <div className="text-right shrink-0">
-                                        <p className="font-bold text-[#0B7C56]">{fmt(order.totalAmount)}</p>
-                                        <p className="text-xs text-gray-400 mt-0.5">{fmtDate(order.createdAt)}</p>
-                                    </div>
-                                </div>
                                 <dl className="mobile-card-meta">
                                     <dt>Branch</dt>
                                     <dd>{order.branch}</dd>
@@ -229,6 +236,7 @@ const AdminOrders = () => {
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Customer</th>
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Branch</th>
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Processed By</th>
+                                        <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Payment</th>
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-center">Items</th>
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-right">Amount</th>
                                         <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-right">Date</th>
@@ -247,6 +255,17 @@ const AdminOrders = () => {
                                                 <span className="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">{order.branch}</span>
                                             </td>
                                             <td className="py-3 px-5 text-sm text-gray-700">{order.processedBy || '—'}</td>
+                                            <td className="py-3 px-5">
+                                                {order.paymentType === 'installment' ? (
+                                                    <span className={`badge ${order.paymentStatus === 'paid' ? 'badge-success' : order.paymentStatus === 'overdue' ? '' : 'badge-warning'}`}
+                                                        style={order.paymentStatus === 'overdue' ? { background: 'rgba(239, 68, 68, 0.12)', color: 'var(--danger)' } : undefined}
+                                                    >
+                                                        {order.paymentStatus === 'paid' ? 'Paid' : order.paymentStatus === 'overdue' ? 'Overdue' : 'Installment'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="badge badge-success">Paid</span>
+                                                )}
+                                            </td>
                                             <td className="py-3 px-5 text-center text-gray-600">{order.items.reduce((s, i) => s + i.quantity, 0)}</td>
                                             <td className="py-3 px-5 text-right font-bold text-gray-800 whitespace-nowrap">{fmt(order.totalAmount)}</td>
                                             <td className="py-3 px-5 text-right text-sm text-gray-500 whitespace-nowrap">{fmtDate(order.createdAt)}</td>

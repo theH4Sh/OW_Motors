@@ -128,9 +128,18 @@ const OrderHistory = () => {
                                         <p className="font-semibold text-gray-900">{order.name}</p>
                                         <p className="text-sm text-gray-500 mt-0.5">{order.phone}</p>
                                     </div>
-                                    <p className="font-bold text-[#0B7C56] whitespace-nowrap">
-                                        PKR {order.totalAmount.toLocaleString()}
-                                    </p>
+                                    <div className="text-right">
+                                        <p className="font-bold text-[#0B7C56] whitespace-nowrap">
+                                            PKR {order.totalAmount.toLocaleString()}
+                                        </p>
+                                        {order.paymentType === 'installment' && (
+                                            <span className={`badge mt-1 ${order.paymentStatus === 'paid' ? 'badge-success' : order.paymentStatus === 'overdue' ? '' : 'badge-warning'}`}
+                                                style={order.paymentStatus === 'overdue' ? { background: 'rgba(239, 68, 68, 0.12)', color: 'var(--danger)' } : undefined}
+                                            >
+                                                {order.paymentStatus === 'paid' ? 'Paid' : order.paymentStatus === 'overdue' ? 'Overdue' : 'Installment'}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <dl className="mobile-card-meta">
                                     <dt>Order ID</dt>
@@ -159,6 +168,7 @@ const OrderHistory = () => {
                                     <th className="py-4 px-6 font-semibold">Date</th>
                                     <th className="py-4 px-6 font-semibold">Customer</th>
                                     <th className="py-4 px-6 font-semibold">Items</th>
+                                    <th className="py-4 px-6 font-semibold">Payment</th>
                                     <th className="py-4 px-6 font-semibold">Total Amount</th>
                                     <th className="py-4 px-6 font-semibold text-right">Actions</th>
                                 </tr>
@@ -174,6 +184,17 @@ const OrderHistory = () => {
                                         </td>
                                         <td className="py-4 px-6 text-gray-600">
                                             {order.items.reduce((sum, item) => sum + item.quantity, 0)} items
+                                        </td>
+                                        <td className="py-4 px-6">
+                                            {order.paymentType === 'installment' ? (
+                                                <span className={`badge ${order.paymentStatus === 'paid' ? 'badge-success' : order.paymentStatus === 'overdue' ? '' : 'badge-warning'}`}
+                                                    style={order.paymentStatus === 'overdue' ? { background: 'rgba(239, 68, 68, 0.12)', color: 'var(--danger)' } : undefined}
+                                                >
+                                                    {order.paymentStatus === 'paid' ? 'Paid' : order.paymentStatus === 'overdue' ? 'Overdue' : 'Installment'}
+                                                </span>
+                                            ) : (
+                                                <span className="badge badge-success">Paid</span>
+                                            )}
                                         </td>
                                         <td className="py-4 px-6 font-bold text-gray-900">
                                             PKR {order.totalAmount.toLocaleString()}
