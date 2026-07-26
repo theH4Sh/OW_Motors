@@ -72,6 +72,7 @@ const Invoice = ({ order, onClose }) => {
                         </tbody>
                     </table>
                     </div>
+                    <div className="flex justify-end gap-8">
                         <div className="text-right space-y-2">
                             <p className="text-gray-500 font-medium">Subtotal</p>
                             <p className="text-gray-500 font-medium pt-4 border-t border-gray-100">Total Due</p>
