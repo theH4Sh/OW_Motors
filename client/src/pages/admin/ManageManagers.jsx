@@ -70,13 +70,9 @@ const ManageManagers = () => {
 
     const handleRegister = async (e) => {
         e.preventDefault();
-
-        if (!passwordStrength.isStrong) {
-            toast.error('Use a strong password or click "Generate strong password"');
-            return;
-        }
-
         setLoading(true);
+        const toastId = toast.loading('Registering manager...');
+
         try {
             const res = await fetch(`${API}auth/signup`, {
                 method: 'POST',
@@ -89,15 +85,15 @@ const ManageManagers = () => {
             const data = await res.json();
 
             if (res.ok) {
-                toast.success('Manager registered successfully!');
+                toast.success('Manager registered successfully!', { id: toastId });
                 setFormData({ username: '', email: '', password: '', branch: '' });
                 setShowPassword(false);
                 fetchManagers();
             } else {
-                toast.error(getErrorMessage(data, 'Failed to register manager'));
+                toast.error(getErrorMessage(data, 'Failed to register manager'), { id: toastId });
             }
         } catch {
-            toast.error('Registration failed');
+            toast.error('Registration failed', { id: toastId });
         } finally {
             setLoading(false);
         }
@@ -374,7 +370,7 @@ const ManageManagers = () => {
                         </div>
 
                         <button
-                            disabled={loading || !passwordStrength.isStrong}
+                            disabled={loading}
                             type="submit"
                             className="btn btn-primary w-full mt-3"
                         >

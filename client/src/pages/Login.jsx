@@ -23,6 +23,7 @@ export default function Login() {
     const handleSubmit = (e) => {
         e.preventDefault();
         setLoading(true);
+        const toastId = toast.loading('Logging in...');
 
         const API_URL = import.meta.env.VITE_API || 'http://localhost:8000/api/';
         fetch(API_URL + 'auth/login', {
@@ -40,7 +41,6 @@ export default function Login() {
             })
             .then((data) => {
                 dispatch(login(data));
-                toast.success('Login successful');
                 localStorage.setItem('auth', JSON.stringify({
                     username: data.username,
                     token: data.token,
@@ -48,10 +48,11 @@ export default function Login() {
                     branch: data.branch,
                     isAuthenticated: true,
                 }));
+                toast.success('Login successful', { id: toastId });
                 navigate('/');
             })
             .catch((err) => {
-                toast.error(getErrorMessage(err, 'Login failed'));
+                toast.error(getErrorMessage(err, 'Login failed'), { id: toastId });
             })
             .finally(() => {
                 setLoading(false);
