@@ -5,8 +5,6 @@ import { createOrder } from '../../slice/orderSlice';
 import toast from 'react-hot-toast';
 import Invoice from '../../components/Invoice';
 
-const IMG_BASE = import.meta.env.VITE_API?.replace('/api', '') || 'http://localhost:8000';
-
 const CATEGORIES = [
     { key: 'all', label: 'All' },
     { key: 'bike', label: 'Bikes' },
@@ -209,7 +207,7 @@ const PointOfSale = () => {
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-5 pb-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-5 pb-4 mt-1">
                                 {filteredProducts.map(prod => {
                                     const inCart = getCartQty(prod._id);
                                     const outOfStock = prod.quantity < 1;
@@ -236,7 +234,7 @@ const PointOfSale = () => {
                                             <div className="relative aspect-[4/3] bg-gray-50 rounded-xl mb-4 overflow-hidden">
                                                 {prod.image ? (
                                                     <img
-                                                        src={`${IMG_BASE}/images/${prod.image}`}
+                                                        src={`${import.meta.env.VITE_IMG_URL}${prod.image}`}
                                                         alt={prod.name}
                                                         className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                     />
@@ -329,7 +327,7 @@ const PointOfSale = () => {
                                     <div key={item._id} className="flex gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
                                         <div className="w-12 h-12 rounded-lg bg-gray-50 overflow-hidden shrink-0">
                                             {item.image ? (
-                                                <img src={`${IMG_BASE}/images/${item.image}`} alt={item.name} className="w-full h-full object-cover" />
+                                                <img src={`${import.meta.env.VITE_IMG_URL}${item.image}`} alt={item.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">—</div>
                                             )}

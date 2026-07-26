@@ -4,8 +4,6 @@ import { fetchProducts, deleteProduct } from '../../slice/inventorySlice';
 import ProductFormModal from '../../components/ProductFormModal';
 import toast from 'react-hot-toast';
 
-const IMG_BASE = import.meta.env.VITE_API?.replace('/api', '') || 'http://localhost:8000';
-
 const InventoryManager = () => {
     const dispatch = useDispatch();
     const { products, status } = useSelector(state => state.inventory);
@@ -137,7 +135,7 @@ const InventoryManager = () => {
                             <div key={item._id} className="mobile-card">
                                 <div className="mobile-card-top">
                                     <div className="mobile-card-thumb">
-                                        <img src={`${IMG_BASE}/images/${item.image}`} alt={item.name} className="w-full h-full object-cover" />
+                                        <img src={`${import.meta.env.VITE_IMG_URL}${item.image}`} alt={item.name} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="mobile-card-body">
                                         <p className="font-semibold text-gray-900 leading-snug">{item.name}</p>
@@ -187,7 +185,7 @@ const InventoryManager = () => {
                                     <tr key={item._id}>
                                         <td>
                                             <div className="mobile-card-thumb">
-                                                <img src={`${IMG_BASE}/images/${item.image}`} alt={item.name} className="w-full h-full object-cover" />
+                                                <img src={`${import.meta.env.VITE_IMG_URL}${item.image}`} alt={item.name} className="w-full h-full object-cover" />
                                             </div>
                                         </td>
                                         <td style={{ fontWeight: '500' }}>{item.name}</td>
