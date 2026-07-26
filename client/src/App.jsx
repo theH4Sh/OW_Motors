@@ -11,7 +11,6 @@ import AdminRoute from './components/AdminRoute';
 import ManagerRoute from './components/ManagerRoute';
 
 // Pages
-import Home from './pages/Home'; // Assuming Home exists
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -42,10 +41,10 @@ function App() {
       <>
         {/* Public Routes with Navbar */}
         <Route path="/" element={<RootLayout />}>
-          <Route index element={!isAuthenticated ? <Home /> : <Navigate to={getDashboardRedirect()} />} />
-          <Route path="login" element={!isAuthenticated ? <Login /> : <Navigate to={getDashboardRedirect()} />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="reset-password/:token" element={<ResetPassword />} />
+          <Route index element={<Navigate to={isAuthenticated ? getDashboardRedirect() : '/login'} replace />} />
+          <Route path="login" element={!isAuthenticated ? <Login /> : <Navigate to={getDashboardRedirect()} replace />} />
+          <Route path="forgot-password" element={!isAuthenticated ? <ForgotPassword /> : <Navigate to={getDashboardRedirect()} replace />} />
+          <Route path="reset-password/:token" element={!isAuthenticated ? <ResetPassword /> : <Navigate to={getDashboardRedirect()} replace />} />
         </Route>
 
         {/* Protected Dashboard Routes with Sidebar */}

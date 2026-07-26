@@ -1,108 +1,151 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { useDispatch } from "react-redux"
+import { useDispatch } from 'react-redux';
 import { login } from '../slice/authSlice.js';
 
 export default function Login() {
-
     const [formData, setFormData] = useState({
-        identifier: "",
-        password: ""
+        identifier: '',
+        password: '',
     });
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.id]: e.target.value })
-    }
-
-    useEffect(() => {
-        console.log(formData)
-    }, [formData]);
+        setFormData({ ...formData, [e.target.id]: e.target.value });
+    };
 
     const handleSubmit = (e) => {
-        e.preventDefault()
+        e.preventDefault();
+        setLoading(true);
 
         const API_URL = import.meta.env.VITE_API || 'http://localhost:8000/api/';
         fetch(API_URL + 'auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
         })
             .then((res) => {
                 if (!res.ok) {
                     return res.json().then((data) => {
-                        console.log(data)
-                        throw new Error(data.message || data.error || data.detail || 'Login Failed')
-                    })
+                        throw new Error(data.message || data.error || data.detail || 'Login failed');
+                    });
                 }
-                return res.json()
+                return res.json();
             })
             .then((data) => {
-                console.log('login successful: ', data)
-                dispatch(login(data))
-                toast.success("Login successful! 🎉")
+                dispatch(login(data));
+                toast.success('Login successful');
                 localStorage.setItem('auth', JSON.stringify({
                     username: data.username,
                     token: data.token,
                     role: data.role,
                     branch: data.branch,
-                    isAuthenticated: true
-                }))
-                navigate('/')
+                    isAuthenticated: true,
+                }));
+                navigate('/');
             })
             .catch((err) => {
-                console.log("your error: ", err)
-                toast.error(`${err}`)
+                toast.error(err.message || 'Login failed');
             })
-    }
+            .finally(() => {
+                setLoading(false);
+            });
+    };
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4">
-            <div className="bg-slate-50 shadow-2xl rounded-2xl max-w-sm w-full md:w-96 p-8 space-y-6">
-                <h2 className="text-3xl font-bold text-center text-gray-800">Welcome</h2>
-                <p className="text-center text-gray-500">Login to your account</p>
-                <form className="space-y-4" onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
-                            Email or Username
-                        </label>
-                        <input
-                            id="identifier"
-                            type="text"
-                            required
-                            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-800"
-                            placeholder="username or email"
-                            onChange={handleChange}
-                        />
+        <div className="auth-page">
+            <div className="auth-shell">
+                <aside className="auth-brand-panel">
+                    <div className="auth-brand-content">
+                        <p className="auth-brand-kicker">Staff Portal</p>
+                        <h1 className="auth-brand-title">
+                            OW<span>Motors</span>
+                        </h1>
+                        <p className="auth-brand-copy">
+                            Inventory, sales, and branch operations — all in one place.
+                        </p>
                     </div>
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            type="password"
-                            required
-                            className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-800]"
-                            placeholder="••••••••"
-                            onChange={handleChange}
-                        />
+                </aside>
+
+                <div className="auth-form-panel">
+                    <div className="auth-card">
+                        <div className="auth-card-header">
+                            <h2>Sign in</h2>
+                            <p>Use your staff username or email to continue.</p>
+                        </div>
+
+                        <form className="auth-form" onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label htmlFor="identifier" className="form-label">
+                                    Email or Username
+                                </label>
+                                <input
+                                    id="identifier"
+                                    type="text"
+                                    required
+                                    autoComplete="username"
+                                    className="form-input"
+                                    placeholder="username or email"
+                                    value={formData.identifier}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <div className="flex items-center justify-between gap-2 mb-2">
+                                    <label htmlFor="password" className="form-label mb-0">
+                                        Password
+                                    </label>
+                                    <Link to="/forgot-password" className="auth-inline-link">
+                                        Forgot password?
+                                    </Link>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        required
+                                        autoComplete="current-password"
+                                        className="form-input pr-12"
+                                        placeholder="••••••••"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="auth-password-toggle"
+                                        onClick={() => setShowPassword((v) => !v)}
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        {showPassword ? (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="btn btn-primary w-full mt-2"
+                            >
+                                {loading ? 'Signing in...' : 'Sign in'}
+                            </button>
+                        </form>
                     </div>
-                    <button
-                        type="submit"
-                        className="w-full py-2 px-4 bg-[#0B7C56] hover:bg-[#095c40] cursor-pointer text-white font-semibold rounded-lg transition duration-200"
-                    >
-                        Log In
-                    </button>
-                </form>
-                <p className="text-center text-sm text-gray-500">
-                    <Link to='/forgot-password' className="text-blue-700 hover:underline">
-                        Forgot password?
-                    </Link>
-                </p>
+                </div>
             </div>
         </div>
     );

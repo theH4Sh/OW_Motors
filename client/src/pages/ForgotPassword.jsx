@@ -1,35 +1,28 @@
-import { useState } from "react";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function ForgotPassword() {
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage("");
-        setError("");
+        setMessage('');
+        setError('');
 
         try {
-            const res = await fetch(
-                "http://localhost:8000/api/auth/forgot-password",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ email }),
-                }
-            );
+            const API_URL = import.meta.env.VITE_API || 'http://localhost:8000/api/';
+            const res = await fetch(`${API_URL}auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
 
             const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Request failed");
-            }
-
+            if (!res.ok) throw new Error(data.message || 'Request failed');
             setMessage(data.message);
         } catch (err) {
             setError(err.message);
@@ -39,32 +32,39 @@ export default function ForgotPassword() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <form
-                onSubmit={handleSubmit}
-                className="bg-slate-50 shadow-2xl rounded-2xl max-w-sm w-full md:w-96 p-8 space-y-6"
-            >
-                <h1 className="text-2xl font-semibold mb-4">Forgot Password</h1>
+        <div className="auth-page auth-page-compact">
+            <div className="auth-card">
+                <div className="auth-card-header">
+                    <h2>Reset password</h2>
+                    <p>Enter your account email and we’ll send a reset link.</p>
+                </div>
 
-                <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-800"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
+                <form className="auth-form" onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="email" className="form-label">Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            required
+                            className="form-input"
+                            placeholder="Enter your email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
 
-                <button
-                    className="w-full bg-[#0B7C56] hover:bg-[#095c40] cursor-pointer text-white py-2 rounded-lg hover:opacity-90 disabled:opacity-50"
-                    disabled={loading}
-                >
-                    {loading ? "Sending..." : "Send Reset Link"}
-                </button>
+                    <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+                        {loading ? 'Sending...' : 'Send reset link'}
+                    </button>
 
-                {message && <p className="text-green-600 mt-3">{message}</p>}
-                {error && <p className="text-red-600 mt-3">{error}</p>}
-            </form>
+                    {message && <p className="auth-feedback auth-feedback-success">{message}</p>}
+                    {error && <p className="auth-feedback auth-feedback-error">{error}</p>}
+                </form>
+
+                <p className="auth-back-link">
+                    <Link to="/login">Back to sign in</Link>
+                </p>
+            </div>
         </div>
     );
 }

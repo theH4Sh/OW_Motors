@@ -1,11 +1,16 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../slice/authSlice';
+
+const AUTH_PATHS = ['/login', '/forgot-password', '/reset-password'];
 
 const Navbar = () => {
     const { isAuthenticated, username } = useSelector(state => state.auth);
     const dispatch = useDispatch();
+    const location = useLocation();
+
+    const isAuthPage = AUTH_PATHS.some((path) => location.pathname.startsWith(path));
 
     const handleLogout = () => {
         dispatch(logout());
@@ -13,33 +18,25 @@ const Navbar = () => {
     };
 
     return (
-        <header style={{ 
-            background: 'var(--nav-bg)', 
-            backdropFilter: 'var(--glass-blur)', 
-            borderBottom: '1px solid var(--surface-border)',
-            padding: '16px 40px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            position: 'sticky',
-            top: 0,
-            zIndex: 100
-        }}>
-            <Link to="/" style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                <span style={{ color: 'var(--primary)' }}>OW</span>Motors
+        <header className="public-nav">
+            <Link to={isAuthenticated ? '/' : '/login'} className="public-nav-brand">
+                <span className="public-nav-mark">OW</span>
+                <span className="public-nav-name">Motors</span>
             </Link>
-            
-            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                {!isAuthenticated ? (
+
+            <div className="public-nav-actions">
+                {isAuthenticated ? (
                     <>
-                        <Link to="/login" className="btn btn-secondary">Login</Link>
+                        <span className="public-nav-welcome">Welcome, {username}</span>
+                        <button type="button" onClick={handleLogout} className="btn btn-secondary">
+                            Logout
+                        </button>
                     </>
-                ) : (
-                    <>
-                        <span style={{ color: 'var(--text-muted)' }}>Welcome, {username}</span>
-                        <button onClick={handleLogout} className="btn btn-secondary">Logout</button>
-                    </>
-                )}
+                ) : !isAuthPage ? (
+                    <Link to="/login" className="btn btn-primary">
+                        Staff Login
+                    </Link>
+                ) : null}
             </div>
         </header>
     );
