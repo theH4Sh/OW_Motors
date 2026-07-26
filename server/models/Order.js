@@ -16,7 +16,8 @@ const orderSchema = new mongoose.Schema({
     phone: { type: String, required: true },
     address: { type: String, required: true },
     totalAmount: { type: Number, required: true },
-    branch: { type: String, required: true }
+    branch: { type: String, required: true },
+    processedBy: { type: String, required: true }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Order", orderSchema);

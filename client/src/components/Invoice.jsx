@@ -62,6 +62,14 @@ const Invoice = ({ order, onClose }) => {
                             <p className="text-gray-600 mt-3">{order.address}</p>
                             <p className="text-gray-600 mt-1">Tel: {order.phone}</p>
                         </div>
+                        {order.processedBy && (
+                            <div>
+                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                    Processed By
+                                </h3>
+                                <p className="font-semibold text-lg leading-snug">{order.processedBy}</p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="invoice-table-wrap mb-8">

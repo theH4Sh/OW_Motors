@@ -78,7 +78,6 @@ const createOrder = async (req, res, next) => {
         }
 
         const order = new Order({
-            // user: userId,
             items: orderItems,
             totalAmount,
             name,
@@ -86,7 +85,8 @@ const createOrder = async (req, res, next) => {
             cnic: formattedCnic,
             phone,
             address,
-            branch
+            branch,
+            processedBy: req.user.username
         })
 
         await order.save()
