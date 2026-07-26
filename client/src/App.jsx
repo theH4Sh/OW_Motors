@@ -13,7 +13,6 @@ import ManagerRoute from './components/ManagerRoute';
 // Pages
 import Home from './pages/Home'; // Assuming Home exists
 import Login from './pages/Login';
-import SignUp from './pages/SignUp';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
@@ -45,8 +44,6 @@ function App() {
         <Route path="/" element={<RootLayout />}>
           <Route index element={!isAuthenticated ? <Home /> : <Navigate to={getDashboardRedirect()} />} />
           <Route path="login" element={!isAuthenticated ? <Login /> : <Navigate to={getDashboardRedirect()} />} />
-          {/* Signup is moved to ManageManagers for admins only, but keep route if public signup is needed */}
-          <Route path="signup" element={!isAuthenticated ? <SignUp /> : <Navigate to={getDashboardRedirect()} />} /> 
           <Route path="forgot-password" element={<ForgotPassword />} />
           <Route path="reset-password/:token" element={<ResetPassword />} />
         </Route>

@@ -33,7 +33,6 @@ const Navbar = () => {
                 {!isAuthenticated ? (
                     <>
                         <Link to="/login" className="btn btn-secondary">Login</Link>
-                        {/* Optionally add Signup if public users should sign up: <Link to="/signup" className="btn btn-primary">Sign Up</Link> */}
                     </>
                 ) : (
                     <>
