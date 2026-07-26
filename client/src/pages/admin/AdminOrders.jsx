@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import Invoice from '../../components/Invoice';
+import { orderMatchesSearch } from '../../utils/orderSearch';
 
 const AdminOrders = () => {
     const { token } = useSelector(state => state.auth);
@@ -32,17 +33,16 @@ const AdminOrders = () => {
     // Get unique branches
     const branches = [...new Set(orders.map(o => o.branch))];
 
-    // Filters
-    const filteredOrders = orders.filter(o => {
-        const matchBranch = branchFilter === 'all' || o.branch === branchFilter;
-        const q = searchQuery.toLowerCase();
-        const matchSearch = !q ||
-            o.name.toLowerCase().includes(q) ||
-            o.phone?.toLowerCase().includes(q) ||
-            o._id.toLowerCase().includes(q) ||
-            o.branch.toLowerCase().includes(q);
-        return matchBranch && matchSearch;
-    });
+    const filteredOrders = useMemo(() => (
+        orders.filter(o => {
+            const matchBranch = branchFilter === 'all' || o.branch === branchFilter;
+            const matchSearch = orderMatchesSearch(o, searchQuery, {
+                includeProcessedBy: true,
+                includeBranch: true,
+            });
+            return matchBranch && matchSearch;
+        })
+    ), [orders, branchFilter, searchQuery]);
 
     const totalRevenue = filteredOrders.reduce((s, o) => s + o.totalAmount, 0);
     const fmt = (n) => 'PKR ' + (n || 0).toLocaleString();
@@ -79,7 +79,7 @@ const AdminOrders = () => {
                     <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     <input
                         type="text"
-                        placeholder="Search orders..."
+                        placeholder="Search by name, date, amount, product, processed by..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm text-sm focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
@@ -116,6 +116,8 @@ const AdminOrders = () => {
                                         <dd>{new Date(order.createdAt).toLocaleDateString()}</dd>
                                         <dt>Items</dt>
                                         <dd>{order.items.reduce((s, i) => s + i.quantity, 0)}</dd>
+                                        <dt>Processed by</dt>
+                                        <dd>{order.processedBy || '—'}</dd>
                                     </dl>
                                     <button
                                         type="button"
@@ -137,6 +139,7 @@ const AdminOrders = () => {
                                     <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Order ID</th>
                                     <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Customer</th>
                                     <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Branch</th>
+                                    <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider">Processed By</th>
                                     <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-center">Items</th>
                                     <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-right">Amount</th>
                                     <th className="py-3 px-5 font-semibold text-xs uppercase tracking-wider text-right">Date</th>
@@ -146,7 +149,7 @@ const AdminOrders = () => {
                             <tbody className="divide-y divide-gray-100">
                                 {filteredOrders.length === 0 ? (
                                     <tr>
-                                        <td colSpan="7" className="text-center py-12 text-gray-400">
+                                        <td colSpan="8" className="text-center py-12 text-gray-400">
                                             {searchQuery ? `No orders matching "${searchQuery}"` : 'No orders found.'}
                                         </td>
                                     </tr>
@@ -161,6 +164,7 @@ const AdminOrders = () => {
                                             <td className="py-3 px-5">
                                                 <span className="text-xs font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">{order.branch}</span>
                                             </td>
+                                            <td className="py-3 px-5 text-sm text-gray-700">{order.processedBy || '—'}</td>
                                             <td className="py-3 px-5 text-center text-gray-600">{order.items.reduce((s, i) => s + i.quantity, 0)}</td>
                                             <td className="py-3 px-5 text-right font-bold text-gray-800">{fmt(order.totalAmount)}</td>
                                             <td className="py-3 px-5 text-right text-sm text-gray-500">{new Date(order.createdAt).toLocaleDateString()}</td>

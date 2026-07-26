@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrdersByBranch } from '../../slice/orderSlice';
 import Invoice from '../../components/Invoice';
+import { orderMatchesSearch } from '../../utils/orderSearch';
 
 const OrderHistory = () => {
     const dispatch = useDispatch();
@@ -9,6 +10,7 @@ const OrderHistory = () => {
     const { branch } = useSelector(state => state.auth);
 
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         if (branch) {
@@ -16,12 +18,40 @@ const OrderHistory = () => {
         }
     }, [dispatch, branch]);
 
+    const filteredOrders = useMemo(
+        () => orders.filter(order => orderMatchesSearch(order, searchQuery)),
+        [orders, searchQuery]
+    );
+
     const isLoading = status === 'loading';
     const isEmpty = !isLoading && orders.length === 0;
+    const noMatches = !isLoading && !isEmpty && filteredOrders.length === 0;
 
     return (
         <div>
-            <h1 className="page-title mb-6">Order History</h1>
+            <div className="page-header">
+                <h1 className="page-title">Order History</h1>
+            </div>
+
+            {!isLoading && !isEmpty && (
+                <div className="filter-toolbar">
+                    <p className="text-sm text-gray-500">
+                        {filteredOrders.length} of {orders.length} orders
+                    </p>
+                    <div className="search-field">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder="Search by name, date, amount, product..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl bg-white shadow-sm text-sm focus:ring-2 focus:ring-[#0B7C56] focus:border-transparent outline-none transition-all"
+                        />
+                    </div>
+                </div>
+            )}
 
             {isLoading ? (
                 <p className="text-gray-500">Loading historical orders...</p>
@@ -29,10 +59,14 @@ const OrderHistory = () => {
                 <div className="text-center py-12 text-gray-500 bg-white rounded-xl border border-dashed border-gray-200">
                     No orders have been processed at this branch yet.
                 </div>
+            ) : noMatches ? (
+                <div className="text-center py-12 text-gray-500 bg-white rounded-xl border border-dashed border-gray-200">
+                    No orders matching "{searchQuery}"
+                </div>
             ) : (
                 <>
                     <div className="mobile-list-wrap space-y-3">
-                        {orders.map(order => (
+                        {filteredOrders.map(order => (
                             <div key={order._id} className="mobile-card">
                                 <div className="flex justify-between items-start gap-3">
                                     <div>
@@ -75,7 +109,7 @@ const OrderHistory = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {orders.map(order => (
+                                {filteredOrders.map(order => (
                                     <tr key={order._id} className="hover:bg-slate-50 transition-colors">
                                         <td className="py-4 px-6 font-mono text-sm text-gray-500">{order._id.slice(-8).toUpperCase()}</td>
                                         <td className="py-4 px-6 text-gray-800">{new Date(order.createdAt).toLocaleDateString()}</td>
